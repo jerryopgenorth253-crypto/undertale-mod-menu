@@ -1,68 +1,112 @@
-# Undertale Save Studio Pro Max
+# Undertale Mod Menu
 
-Unofficial local Windows tool for editing Undertale save values, experimenting with route state, and managing Undertale fangame/mod downloads.
+![Windows](https://img.shields.io/badge/platform-Windows-2f7df6)
+![Build](https://img.shields.io/badge/build-.NET%20Framework-7d70ff)
+![Unofficial](https://img.shields.io/badge/status-unofficial%20fan%20tool-ff3f5c)
 
-## Download
+**Undertale Mod Menu** is a local Windows utility for editing Undertale save data, testing route states, managing inventory experiments, and installing downloaded Undertale fangame/mod packages in a safer, organized way.
 
-Use `UndertaleSaveStudioPro.exe` from this repository, or build it yourself with `build.ps1`.
+It does **not** include Undertale game files, paid content, or downloaded GameJolt projects.
 
-## Main Features
+## Quick Start
 
-- Big editable number boxes for `LEVEL`, `HP`, `EXP`, `GOLD`, and `DMG`
-- Uncapped values up to `999,999,999`
-- FUN value, route state, kills, room, plot, and raw save-line editing
-- Inventory Forge for regular Undertale item IDs and experimental raw mod-token IDs
-- Chaos Console randomizers for rooms, stats, inventory, flags, and battle-style state
-- Feature Vault 100K+ with searchable one-click presets
-- Watch Game toggle that waits for Undertale and refreshes edited save/live config values
-- Live Hook V2 installer for patched local `data.win` builds
-- GameJolt Mod Hub for browsing Undertale-tagged GameJolt projects and installing downloaded ZIP/folder mods into a managed library
-
-## Running
-
-Double-click:
-
-```text
-UndertaleSaveStudioPro.exe
-```
-
-The app reads and writes these local files:
-
-```text
-%LOCALAPPDATA%\UNDERTALE\undertale.ini
-%LOCALAPPDATA%\UNDERTALE\file0
-%LOCALAPPDATA%\UNDERTALE\file9
-%LOCALAPPDATA%\UNDERTALE\codex_live.ini
-```
+1. Download `UndertaleSaveStudioPro.exe` from the latest GitHub Release.
+2. Put `update.ini` beside the EXE.
+3. Double-click `UndertaleSaveStudioPro.exe`.
+4. Use **Write Save** only after checking the values you changed.
 
 Backups are created before save writes.
 
-## Building
+## Highlights
 
-On Windows, run:
+| Area | What It Does |
+| --- | --- |
+| Player numbers | Edit level, HP, EXP, gold, and damage with large uncapped inputs. |
+| Route tools | Adjust FUN, route state, kills, murder-route flag, plot, room, and time. |
+| Inventory Forge | Add regular Undertale items and experimental raw mod-token IDs. |
+| Chaos Console | Randomize stats, rooms, inventory, flags, battle-style state, and raw lines. |
+| Feature Vault | Search 100K+ one-click presets for saves, routes, rooms, flags, and items. |
+| GameJolt Mod Hub | Browse Undertale-tagged GameJolt projects, then install downloaded ZIP/folder mods into a managed library. |
+| GitHub updater | Checks the latest GitHub release EXE and self-updates when a newer build exists. |
 
-```powershell
-.\build.ps1
-```
+## Save Files
 
-This uses the built-in .NET Framework C# compiler and produces:
+The app works with the normal local Undertale save folder:
 
 ```text
-UndertaleSaveStudioPro.exe
+%LOCALAPPDATA%\UNDERTALE\
+```
+
+It can read/write:
+
+```text
+undertale.ini
+file0
+file9
+codex_live.ini
 ```
 
 ## GameJolt Mod Hub
 
-The hub loads the Undertale tag from GameJolt, opens the selected project page, and installs a downloaded ZIP/folder into:
+The mod hub loads Undertale-tagged projects from GameJolt and opens the selected project page in your browser. After you download a ZIP or folder, the app can install it into:
 
 ```text
 %USERPROFILE%\Downloads\UndertaleGameJoltMods
 ```
 
-Standalone fangames are copied as their own folder. `data.win`-style mods are layered onto a fresh copy of your selected Undertale game folder so the original game folder is not overwritten.
+Standalone fangames are copied as their own folder. `data.win`-style mods are layered onto a fresh copy of your selected Undertale game folder, so the original folder is not overwritten.
 
-The hub does not bypass GameJolt download pages, account prompts, creator permissions, or project-specific install instructions.
+The hub does not bypass GameJolt download pages, login prompts, creator permissions, or project-specific install instructions.
 
-## Notes
+## Auto-Update
 
-This is an unofficial fan tool. It does not include Undertale game files or GameJolt project files. Use it with your own legitimate copy of Undertale and with mods you are allowed to download/use.
+This build is configured for:
+
+```text
+jerryopgenorth253-crypto/undertale-mod-menu
+```
+
+`update.ini` points at the latest release asset:
+
+```text
+https://github.com/jerryopgenorth253-crypto/undertale-mod-menu/releases/latest/download/UndertaleSaveStudioPro.exe
+```
+
+When the release EXE hash is different from the running EXE, the app downloads it, closes, replaces itself, saves the old file as `UndertaleSaveStudioPro.exe.previous`, and restarts.
+
+## Build From Source
+
+On Windows:
+
+```powershell
+.\build.ps1
+```
+
+The build script uses the built-in .NET Framework C# compiler and outputs:
+
+```text
+UndertaleSaveStudioPro.exe
+```
+
+GitHub Actions is included at:
+
+```text
+.github/workflows/build.yml
+```
+
+## Release Checklist
+
+1. Run `.\build.ps1`.
+2. Create a new GitHub Release.
+3. Attach `UndertaleSaveStudioPro.exe`.
+4. Attach or include `update.ini`.
+5. Publish the release.
+
+After that, existing users can receive the update through the built-in updater.
+
+## Important Notes
+
+- This is an unofficial fan project.
+- Use it with your own legitimate copy of Undertale.
+- Some save values can make a save unstable; backups are there for a reason.
+- Raw attack-token IDs are for modded builds. Vanilla Undertale does not turn inventory slots into battle attacks by itself.

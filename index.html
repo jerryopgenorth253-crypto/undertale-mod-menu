@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UT Save Switchboard</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="soul" aria-hidden="true"></div>
+          <div>
+            <h1>UT Save Switchboard</h1>
+            <p id="savePath">Detecting save folder...</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="reloadBtn" type="button" title="Reload live files">
+            <span class="icon" aria-hidden="true">↻</span>
+            <span>Reload</span>
+          </button>
+          <button id="importBtn" type="button" title="Import save files">
+            <span class="icon" aria-hidden="true">⇪</span>
+            <span>Import</span>
+          </button>
+          <button id="downloadBtn" type="button" title="Download edited files">
+            <span class="icon" aria-hidden="true">⇩</span>
+            <span>Download</span>
+          </button>
+          <button id="writeBtn" class="primary" type="button" title="Write to Undertale save folder">
+            <span class="icon" aria-hidden="true">◆</span>
+            <span>Write Save</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="panel run-panel">
+          <div class="panel-head">
+            <h2>Run</h2>
+            <output id="routeReadout">No file0</output>
+          </div>
+
+          <label class="field">
+            <span>Name</span>
+            <input id="nameInput" type="text" maxlength="12" autocomplete="off" spellcheck="false">
+          </label>
+
+          <div class="segment" role="group" aria-label="Route preset">
+            <button type="button" data-route="pacifist">Pacifist</button>
+            <button type="button" data-route="neutral">Neutral</button>
+            <button type="button" data-route="genocide">Genocide</button>
+            <button type="button" data-route="custom">Custom</button>
+          </div>
+
+          <div class="meter-row">
+            <label class="field compact">
+              <span>Route Flag</span>
+              <input id="murderInput" type="number" min="0" max="16" step="1">
+            </label>
+            <input id="murderRange" class="slider" type="range" min="0" max="16" step="1" aria-label="Route flag">
+          </div>
+
+          <div class="route-track" aria-hidden="true">
+            <div id="routeTrackFill"></div>
+          </div>
+
+          <div class="facts">
+            <span>LV line 2</span>
+            <span>EXP line 10</span>
+            <span>Kills line 12</span>
+            <span>Flag 26 line 57</span>
+          </div>
+        </section>
+
+        <section class="panel values-panel">
+          <div class="panel-head">
+            <h2>Values</h2>
+            <output id="fileStatus">Waiting</output>
+          </div>
+
+          <div class="value-grid">
+            <label class="field">
+              <span>FUN</span>
+              <input id="funInput" type="number" min="1" max="100" step="1">
+            </label>
+            <label class="field">
+              <span>LV</span>
+              <input id="lvInput" type="number" min="1" max="999999999" step="1">
+            </label>
+            <label class="field">
+              <span>HP</span>
+              <input id="hpInput" type="number" min="1" max="999999999" step="1">
+            </label>
+            <label class="field">
+              <span>EXP</span>
+              <input id="xpInput" type="number" min="0" max="999999999" step="1">
+            </label>
+            <label class="field">
+              <span>Gold</span>
+              <input id="goldInput" type="number" min="0" max="999999999" step="1">
+            </label>
+            <label class="field">
+              <span>Kills</span>
+              <input id="killsInput" type="number" min="0" max="9999" step="1">
+            </label>
+          </div>
+
+          <div class="meter-row fun-row">
+            <input id="funRange" class="slider" type="range" min="1" max="100" step="1" aria-label="FUN value">
+            <button id="randomFunBtn" type="button" title="Random FUN">
+              <span class="icon" aria-hidden="true">?</span>
+              <span>Random</span>
+            </button>
+          </div>
+
+          <div class="toggles">
+            <label>
+              <input id="syncStats" type="checkbox" checked>
+              <span>Sync HP and EXP with LV</span>
+            </label>
+            <label>
+              <input id="mirrorFile9" type="checkbox" checked>
+              <span>Mirror file9 backup</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel flags-panel">
+          <div class="panel-head">
+            <h2>Flags</h2>
+            <output id="lineCount">0 lines</output>
+          </div>
+
+          <div class="value-grid slim">
+            <label class="field">
+              <span>Plot</span>
+              <input id="plotInput" type="number" step="1">
+            </label>
+            <label class="field">
+              <span>Room</span>
+              <input id="roomInput" type="number" step="1">
+            </label>
+            <label class="field">
+              <span>Time</span>
+              <input id="timeInput" type="number" step="1">
+            </label>
+          </div>
+
+          <div class="line-editor">
+            <label class="field compact">
+              <span>Line</span>
+              <input id="lineInput" type="number" min="1" max="999" step="1" value="57">
+            </label>
+            <label class="field line-value">
+              <span>Value</span>
+              <input id="lineValueInput" type="text" spellcheck="false">
+            </label>
+            <button id="readLineBtn" type="button" title="Read line">
+              <span class="icon" aria-hidden="true">⌕</span>
+              <span>Read</span>
+            </button>
+            <button id="setLineBtn" type="button" title="Set line">
+              <span class="icon" aria-hidden="true">✓</span>
+              <span>Set</span>
+            </button>
+          </div>
+
+          <div id="statusLog" class="status-log" role="status" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <input id="filePicker" type="file" accept=".ini,.txt" multiple hidden>
+    <script src="./app.js"></script>
+  </body>
+</html>

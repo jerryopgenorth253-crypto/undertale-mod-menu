@@ -72,6 +72,12 @@ jerryopgenorth253-crypto/undertale-mod-menu
 https://github.com/jerryopgenorth253-crypto/undertale-mod-menu/releases/latest/download/UndertaleSaveStudioPro.exe
 ```
 
+If no release exists yet, it can also fall back to the raw repo EXE:
+
+```text
+https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/UndertaleSaveStudioPro.exe
+```
+
 When the release EXE hash is different from the running EXE, the app downloads it, closes, replaces itself, saves the old file as `UndertaleSaveStudioPro.exe.previous`, and restarts.
 
 ## Build From Source

@@ -66,6 +66,12 @@ This build is configured for:
 jerryopgenorth253-crypto/undertale-mod-menu
 ```
 
+Before downloading, the app checks a remote build manifest:
+
+```text
+https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/update-manifest.ini
+```
+
 `update.ini` points at the latest release asset:
 
 ```text
@@ -78,7 +84,7 @@ If no release exists yet, it can also fall back to the raw repo EXE:
 https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/UndertaleSaveStudioPro.exe
 ```
 
-When the release EXE hash is different from the running EXE, the app downloads it, closes, replaces itself, saves the old file as `UndertaleSaveStudioPro.exe.previous`, and restarts.
+When the manifest build is newer than the running EXE, the app downloads the EXE, compares SHA-256 hashes, closes, replaces itself, saves the old file as `UndertaleSaveStudioPro.exe.previous`, and restarts.
 
 ## Build From Source
 

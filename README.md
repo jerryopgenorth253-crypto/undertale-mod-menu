@@ -13,7 +13,7 @@ It does **not** include Undertale game files, paid content, or downloaded GameJo
 1. Download `UndertaleSaveStudioPro.exe` from the latest GitHub Release.
 2. Put `update.ini` beside the EXE.
 3. Double-click `UndertaleSaveStudioPro.exe`.
-4. Use **Write Save** only after checking the values you changed.
+4. Use **1 Load Save**, pick a route or preset, then use **3 Write Save** only after checking the values you changed.
 
 Backups are created before save writes.
 
@@ -21,6 +21,8 @@ Backups are created before save writes.
 
 | Area | What It Does |
 | --- | --- |
+| Neon Feature Vault UI | Uses the thumbnail-inspired dark arcade look with glowing number cards, a big center hero, and bright action tiles. |
+| Easy Player Mode | Adds a first-run guide, Quick Start buttons, simple step labels, and tooltips for new players. |
 | Player numbers | Edit level, HP, EXP, gold, and damage with large uncapped inputs. |
 | Route tools | Adjust FUN, route state, kills, murder-route flag, plot, room, and time. |
 | Inventory Forge | Add regular Undertale items and experimental raw mod-token IDs. |
@@ -66,25 +68,25 @@ This build is configured for:
 jerryopgenorth253-crypto/undertale-mod-menu
 ```
 
+`update.ini` and the remote manifest can point at the repo EXE while a release is being prepared:
+
+```text
+https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/UndertaleSaveStudioPro.exe
+```
+
 Before downloading, the app checks a remote build manifest:
 
 ```text
 https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/update-manifest.ini
 ```
 
-`update.ini` points at the latest release asset:
+It can also use the latest GitHub Release asset:
 
 ```text
 https://github.com/jerryopgenorth253-crypto/undertale-mod-menu/releases/latest/download/UndertaleSaveStudioPro.exe
 ```
 
-If no release exists yet, it can also fall back to the raw repo EXE:
-
-```text
-https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/UndertaleSaveStudioPro.exe
-```
-
-When the manifest build is newer than the running EXE, the app downloads the EXE, compares SHA-256 hashes, closes, replaces itself, saves the old file as `UndertaleSaveStudioPro.exe.previous`, and restarts.
+When the release EXE hash is different from the running EXE, the app downloads it, closes, replaces itself, saves the old file as `UndertaleSaveStudioPro.exe.previous`, and restarts.
 
 ## Build From Source
 

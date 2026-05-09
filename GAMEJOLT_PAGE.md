@@ -2,11 +2,11 @@
 
 ## Title
 
-Undertale Mod Menu - Save Studio Pro Max
+Undertale Mod Menu - Neon Feature Vault
 
 ## Short Description
 
-A Windows save/mod utility for Undertale with uncapped stats, route tools, inventory editing, GameJolt mod browsing, and GitHub auto-updates.
+A Windows save/mod utility for Undertale with a thumbnail-style neon Feature Vault interface, uncapped stats, route tools, inventory editing, GameJolt mod browsing, and GitHub auto-updates.
 
 ## Long Description
 
@@ -14,6 +14,8 @@ Undertale Mod Menu is an unofficial Windows fan tool for editing local Undertale
 
 Features:
 
+- Thumbnail-inspired neon dashboard with glowing cards and a giant Feature Vault hero
+- Easy Player Mode with Quick Start buttons and a built-in Player Guide
 - Edit LEVEL, HP, EXP, GOLD, and DMG with uncapped number boxes
 - Change FUN, route state, kills, plot, room, and raw file0 lines
 - Use Inventory Forge for regular item IDs and experimental raw mod-token IDs
@@ -44,14 +46,20 @@ Windows
 
 ## Release Name
 
-Pro Max Auto-Updater Build
+Neon Feature Vault Build
 
 ## Version / Build
 
-202605071820
+202605091500
 
 ## Release Notes
 
+- Restyled the app to match the neon Feature Vault thumbnail look
+- Added a big center hero panel and stacked glowing player-number cards
+- Added thumbnail-style preset tiles and a bottom action strip
+- Improved the interface for new players
+- Added a Player Guide pop-up
+- Added Quick Start buttons for Load, Safe Start, Make OP, Guide, and Write
 - Added GitHub self-updater with remote manifest support
 - Added release-first update download with raw repo fallback
 - Added GameJolt Mod Hub for browsing Undertale-tagged projects
@@ -65,4 +73,4 @@ UndertaleSaveStudioPro.exe
 
 ## Upload ZIP
 
-GameJolt_Undertale_Mod_Menu_ProMax_202605071820.zip
+GameJolt_Undertale_Mod_Menu_NeonVault_202605091500.zip

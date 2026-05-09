@@ -1,5 +1,26 @@
 # Release Notes
 
+## Neon Feature Vault Build
+
+### New
+
+- Thumbnail-inspired neon dashboard style
+- Stacked glowing player-number cards on the left
+- Big center Feature Vault hero panel
+- Preset tiles for Fresh Start, Ruins Boost, Judgement, Sans Practice, Omega Ready, and Absolute Max
+- Bottom action strip for Chaos, Forge, God, and Random
+- Build manifest bumped to `202605091500`
+
+## Easy Player Mode Build
+
+### New
+
+- Clearer first-run flow with Load Save, pick values/tools, and Write Save steps
+- Quick Start panel for Load, Safe Start, Make OP, Guide, and Write
+- New Player Guide pop-up with plain-language tips for safe save editing
+- Friendlier button names and tooltips for common player actions
+- Build manifest bumped to `202605091200`
+
 ## Pro Max Build
 
 ### New

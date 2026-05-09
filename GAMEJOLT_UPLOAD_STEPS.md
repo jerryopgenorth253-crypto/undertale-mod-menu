@@ -17,7 +17,7 @@ https://gamejolt.com/dashboard/games/add
 6. Upload:
 
 ```text
-C:\Users\Jerry\Downloads\GameJolt_Undertale_Mod_Menu_ProMax_202605071820.zip
+C:\Users\Jerry\Downloads\GameJolt_Undertale_Mod_Menu_NeonVault_202605091500.zip
 ```
 
 7. Set the launch file to:
@@ -37,4 +37,4 @@ UndertaleSaveStudioPro.exe
 
 ## Reminder
 
-Do not upload Undertale game files or downloaded GameJolt mods. This package contains only the tool and its local configs/docs.
+Do not upload Undertale game files or downloaded GameJolt mod files. This package contains only the tool and its local configs/docs.

@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -21,6 +22,521 @@ namespace UndertaleSaveStudioPro
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
+        }
+    }
+
+    internal sealed class UpdateConfig
+    {
+        public bool Enabled = true;
+        public bool AutoInstall = true;
+        public string Owner = "";
+        public string Repo = "";
+        public string AssetName = "UndertaleSaveStudioPro.exe";
+        public string ManifestUrl = "";
+        public string DownloadUrl = "";
+        public string FallbackUrl = "";
+    }
+
+    internal sealed class RemoteUpdate
+    {
+        public long Build;
+        public string DownloadUrl = "";
+        public string FallbackUrl = "";
+        public string Notes = "";
+    }
+
+    internal static class SelfUpdater
+    {
+        private const string ConfigFileName = "update.ini";
+        private const long CurrentBuild = 202605091500L;
+
+        public static void CheckForUpdates(Form owner, Action<string> report, bool userRequested)
+        {
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate
+            {
+                string downloaded = null;
+                try
+                {
+                    UpdateConfig config = LoadOrCreateConfig();
+                    if (!config.Enabled)
+                    {
+                        if (userRequested)
+                        {
+                            Report(owner, report, "GitHub auto-update is disabled in update.ini.");
+                        }
+                        return;
+                    }
+
+                    RemoteUpdate remote = LoadRemoteManifest(config, owner, report);
+                    if (remote == null)
+                    {
+                        string msg = "GitHub updater is ready, but update-manifest.ini is not available yet.";
+                        Report(owner, report, msg);
+                        if (userRequested)
+                        {
+                            ShowInfo(owner, "UPDATE MANIFEST NEEDED", msg + "\r\n\r\nUpload update-manifest.ini to the GitHub repo or set ManifestUrl in update.ini.", Color.FromArgb(255, 195, 70));
+                        }
+                        return;
+                    }
+
+                    if (remote.Build <= CurrentBuild)
+                    {
+                        Report(owner, report, "GitHub update check complete. This EXE is already the newest build.");
+                        return;
+                    }
+
+                    string[] urls = ResolveDownloadUrls(config, remote);
+                    if (urls.Length == 0)
+                    {
+                        string msg = "GitHub updater is ready. Add your GitHub repo or release download URL to update.ini.";
+                        Report(owner, report, msg);
+                        if (userRequested)
+                        {
+                            ShowInfo(owner, "UPDATE SETTINGS NEEDED", msg + "\r\n\r\nFile:\r\n" + ConfigPath(), Color.FromArgb(255, 195, 70));
+                        }
+                        return;
+                    }
+
+                    Report(owner, report, "New GitHub build " + remote.Build.ToString(CultureInfo.InvariantCulture) + " found. Downloading EXE...");
+                    downloaded = Path.Combine(Path.GetTempPath(), "UTSS_update_" + DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture) + ".exe");
+                    string usedUrl = DownloadFirstWorking(urls, downloaded, owner, report);
+
+                    if (!LooksLikeWindowsExe(downloaded))
+                    {
+                        throw new InvalidOperationException("The GitHub download did not look like a Windows EXE. Check update.ini, the release asset, or the raw fallback URL.");
+                    }
+
+                    string currentExe = Application.ExecutablePath;
+                    string currentHash = Sha256(currentExe);
+                    string newHash = Sha256(downloaded);
+                    if (string.Equals(currentHash, newHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        DeleteQuiet(downloaded);
+                        Report(owner, report, "GitHub manifest is newer, but the downloaded EXE hash matches this build.");
+                        return;
+                    }
+
+                    string tempExe = downloaded;
+                    downloaded = null;
+                    RunOnUi(owner, delegate
+                    {
+                        bool install = config.AutoInstall;
+                        if (!install || userRequested)
+                        {
+                            install = ProDialog.ShowConfirm(owner, "GITHUB UPDATE FOUND", "A newer EXE was found on GitHub.\r\n\r\nSource:\r\n" + usedUrl + "\r\n\r\nInstall it now? The app will close, replace itself, and restart.", Color.FromArgb(85, 220, 155));
+                        }
+                        else
+                        {
+                            ProDialog.ShowInfo(owner, "GITHUB UPDATE FOUND", "A newer EXE was found on GitHub.\r\n\r\nClick OK and the app will update itself, close, and restart.", Color.FromArgb(85, 220, 155));
+                        }
+
+                        if (install)
+                        {
+                            Report(owner, report, "Installing GitHub update and restarting...");
+                            LaunchReplacement(owner, currentExe, tempExe);
+                        }
+                        else
+                        {
+                            DeleteQuiet(tempExe);
+                            Report(owner, report, "GitHub update found but not installed.");
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    DeleteQuiet(downloaded);
+                    string msg = "GitHub update check failed: " + ex.Message;
+                    Report(owner, report, msg);
+                    if (userRequested)
+                    {
+                        ShowInfo(owner, "UPDATE FAILED", msg, Color.FromArgb(255, 195, 70));
+                    }
+                }
+            });
+        }
+
+        public static void OpenConfig()
+        {
+            LoadOrCreateConfig();
+            try
+            {
+                Process.Start(ConfigPath());
+            }
+            catch
+            {
+                Process.Start("notepad.exe", QuoteArg(ConfigPath()));
+            }
+        }
+
+        private static UpdateConfig LoadOrCreateConfig()
+        {
+            string path = ConfigPath();
+            if (!File.Exists(path))
+            {
+                try
+                {
+                    File.WriteAllText(path,
+                        "[Update]\r\n" +
+                        "Enabled=true\r\n" +
+                        "AutoInstall=true\r\n" +
+                        "Owner=jerryopgenorth253-crypto\r\n" +
+                        "Repo=undertale-mod-menu\r\n" +
+                        "AssetName=UndertaleSaveStudioPro.exe\r\n" +
+                        "ManifestUrl=https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/update-manifest.ini\r\n" +
+                        "DownloadUrl=https://github.com/jerryopgenorth253-crypto/undertale-mod-menu/releases/latest/download/UndertaleSaveStudioPro.exe\r\n" +
+                        "FallbackUrl=https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/UndertaleSaveStudioPro.exe\r\n" +
+                        "\r\n" +
+                        "# DownloadUrl is tried first. FallbackUrl lets the updater work before a formal GitHub Release exists.\r\n");
+                }
+                catch
+                {
+                }
+            }
+
+            UpdateConfig config = new UpdateConfig();
+            if (!File.Exists(path))
+            {
+                return config;
+            }
+
+            foreach (string raw in File.ReadAllLines(path))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith(";") || line.StartsWith("["))
+                {
+                    continue;
+                }
+
+                int eq = line.IndexOf('=');
+                if (eq <= 0)
+                {
+                    continue;
+                }
+
+                string key = line.Substring(0, eq).Trim();
+                string value = line.Substring(eq + 1).Trim();
+                if (key.Equals("Enabled", StringComparison.OrdinalIgnoreCase)) config.Enabled = ParseBool(value, true);
+                else if (key.Equals("AutoInstall", StringComparison.OrdinalIgnoreCase)) config.AutoInstall = ParseBool(value, true);
+                else if (key.Equals("Owner", StringComparison.OrdinalIgnoreCase)) config.Owner = value;
+                else if (key.Equals("Repo", StringComparison.OrdinalIgnoreCase)) config.Repo = value;
+                else if (key.Equals("AssetName", StringComparison.OrdinalIgnoreCase)) config.AssetName = value;
+                else if (key.Equals("ManifestUrl", StringComparison.OrdinalIgnoreCase)) config.ManifestUrl = value;
+                else if (key.Equals("DownloadUrl", StringComparison.OrdinalIgnoreCase)) config.DownloadUrl = value;
+                else if (key.Equals("FallbackUrl", StringComparison.OrdinalIgnoreCase)) config.FallbackUrl = value;
+            }
+            return config;
+        }
+
+        private static bool ParseBool(string value, bool fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return fallback;
+            }
+            string v = value.Trim().ToLowerInvariant();
+            if (v == "1" || v == "true" || v == "yes" || v == "on") return true;
+            if (v == "0" || v == "false" || v == "no" || v == "off") return false;
+            return fallback;
+        }
+
+        private static RemoteUpdate LoadRemoteManifest(UpdateConfig config, Control owner, Action<string> report)
+        {
+            string[] urls = ResolveManifestUrls(config);
+            Exception last = null;
+            for (int i = 0; i < urls.Length; i++)
+            {
+                try
+                {
+                    Report(owner, report, "Checking update manifest " + (i + 1).ToString() + "/" + urls.Length.ToString() + "...");
+                    string text = DownloadString(urls[i]);
+                    RemoteUpdate remote = ParseRemoteManifest(text);
+                    if (remote != null && remote.Build > 0)
+                    {
+                        return remote;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                }
+            }
+            return null;
+        }
+
+        private static string[] ResolveManifestUrls(UpdateConfig config)
+        {
+            List<string> urls = new List<string>();
+            if (!string.IsNullOrWhiteSpace(config.ManifestUrl))
+            {
+                AddUnique(urls, config.ManifestUrl.Trim());
+            }
+
+            bool hasRepo = !string.IsNullOrWhiteSpace(config.Owner) &&
+                !string.IsNullOrWhiteSpace(config.Repo) &&
+                config.Owner.IndexOf("YOUR_", StringComparison.OrdinalIgnoreCase) < 0;
+
+            if (hasRepo)
+            {
+                AddUnique(urls, "https://raw.githubusercontent.com/" + Uri.EscapeDataString(config.Owner.Trim()) + "/" + Uri.EscapeDataString(config.Repo.Trim()) + "/main/update-manifest.ini");
+            }
+            return urls.ToArray();
+        }
+
+        private static RemoteUpdate ParseRemoteManifest(string text)
+        {
+            RemoteUpdate remote = new RemoteUpdate();
+            foreach (string raw in (text ?? "").Replace("\r\n", "\n").Replace("\r", "\n").Split('\n'))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith(";") || line.StartsWith("["))
+                {
+                    continue;
+                }
+                int eq = line.IndexOf('=');
+                if (eq <= 0)
+                {
+                    continue;
+                }
+                string key = line.Substring(0, eq).Trim();
+                string value = line.Substring(eq + 1).Trim();
+                long build;
+                if (key.Equals("Build", StringComparison.OrdinalIgnoreCase) && long.TryParse(value, out build)) remote.Build = build;
+                else if (key.Equals("DownloadUrl", StringComparison.OrdinalIgnoreCase)) remote.DownloadUrl = value;
+                else if (key.Equals("FallbackUrl", StringComparison.OrdinalIgnoreCase)) remote.FallbackUrl = value;
+                else if (key.Equals("Notes", StringComparison.OrdinalIgnoreCase)) remote.Notes = value;
+            }
+            return remote.Build > 0 ? remote : null;
+        }
+
+        private static string[] ResolveDownloadUrls(UpdateConfig config, RemoteUpdate remote)
+        {
+            List<string> urls = new List<string>();
+            if (remote != null && !string.IsNullOrWhiteSpace(remote.DownloadUrl))
+            {
+                AddUnique(urls, remote.DownloadUrl.Trim());
+            }
+            else if (!string.IsNullOrWhiteSpace(config.DownloadUrl))
+            {
+                AddUnique(urls, config.DownloadUrl.Trim());
+            }
+
+            bool hasRepo = !string.IsNullOrWhiteSpace(config.Owner) &&
+                !string.IsNullOrWhiteSpace(config.Repo) &&
+                !string.IsNullOrWhiteSpace(config.AssetName) &&
+                config.Owner.IndexOf("YOUR_", StringComparison.OrdinalIgnoreCase) < 0;
+
+            if (hasRepo)
+            {
+                string releaseUrl = "https://github.com/" + Uri.EscapeDataString(config.Owner.Trim()) + "/" + Uri.EscapeDataString(config.Repo.Trim()) + "/releases/latest/download/" + Uri.EscapeDataString(config.AssetName.Trim());
+                AddUnique(urls, releaseUrl);
+            }
+
+            if (remote != null && !string.IsNullOrWhiteSpace(remote.FallbackUrl))
+            {
+                AddUnique(urls, remote.FallbackUrl.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(config.FallbackUrl))
+            {
+                AddUnique(urls, config.FallbackUrl.Trim());
+            }
+
+            if (hasRepo)
+            {
+                string rawUrl = "https://raw.githubusercontent.com/" + Uri.EscapeDataString(config.Owner.Trim()) + "/" + Uri.EscapeDataString(config.Repo.Trim()) + "/main/" + Uri.EscapeDataString(config.AssetName.Trim());
+                AddUnique(urls, rawUrl);
+            }
+
+            return urls.ToArray();
+        }
+
+        private static void AddUnique(List<string> urls, string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return;
+            }
+            for (int i = 0; i < urls.Count; i++)
+            {
+                if (string.Equals(urls[i], url, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+            urls.Add(url);
+        }
+
+        private static string DownloadFirstWorking(string[] urls, string target, Control owner, Action<string> report)
+        {
+            Exception last = null;
+            for (int i = 0; i < urls.Length; i++)
+            {
+                try
+                {
+                    DeleteQuiet(target);
+                    Report(owner, report, "Checking GitHub source " + (i + 1).ToString() + "/" + urls.Length.ToString() + "...");
+                    DownloadFile(urls[i], target);
+                    return urls[i];
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                }
+            }
+
+            throw new InvalidOperationException("Could not download the update EXE from GitHub. Last error: " + (last == null ? "unknown" : last.Message));
+        }
+
+        private static void DownloadFile(string url, string target)
+        {
+            SetTls();
+            using (WebClient client = new WebClient())
+            {
+                client.Headers[HttpRequestHeader.UserAgent] = "UndertaleSaveStudioPro-Updater/1.0";
+                client.DownloadFile(url, target);
+            }
+        }
+
+        private static string DownloadString(string url)
+        {
+            SetTls();
+            using (WebClient client = new WebClient())
+            {
+                client.Headers[HttpRequestHeader.UserAgent] = "UndertaleSaveStudioPro-Updater/1.0";
+                return client.DownloadString(url);
+            }
+        }
+
+        private static void SetTls()
+        {
+            try
+            {
+                ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | (SecurityProtocolType)3072 | (SecurityProtocolType)768;
+            }
+            catch
+            {
+            }
+        }
+
+        private static bool LooksLikeWindowsExe(string path)
+        {
+            try
+            {
+                using (FileStream fs = File.OpenRead(path))
+                {
+                    if (fs.Length < 4096)
+                    {
+                        return false;
+                    }
+                    return fs.ReadByte() == 0x4D && fs.ReadByte() == 0x5A;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string Sha256(string path)
+        {
+            using (SHA256 sha = SHA256.Create())
+            using (FileStream fs = File.OpenRead(path))
+            {
+                byte[] hash = sha.ComputeHash(fs);
+                return BitConverter.ToString(hash).Replace("-", "");
+            }
+        }
+
+        private static void LaunchReplacement(Form owner, string currentExe, string newExe)
+        {
+            string script = Path.Combine(Path.GetTempPath(), "UTSS_apply_update_" + DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture) + ".ps1");
+            string backup = currentExe + ".previous";
+            string scriptText =
+                "param([int]$ProcessId,[string]$Target,[string]$NewFile,[string]$Backup)\r\n" +
+                "$ErrorActionPreference='Stop'\r\n" +
+                "try { Wait-Process -Id $ProcessId -Timeout 60 -ErrorAction SilentlyContinue } catch {}\r\n" +
+                "Start-Sleep -Milliseconds 500\r\n" +
+                "try { if (Test-Path -LiteralPath $Backup) { Remove-Item -LiteralPath $Backup -Force } } catch {}\r\n" +
+                "try { if (Test-Path -LiteralPath $Target) { Copy-Item -LiteralPath $Target -Destination $Backup -Force } } catch {}\r\n" +
+                "Copy-Item -LiteralPath $NewFile -Destination $Target -Force\r\n" +
+                "Remove-Item -LiteralPath $NewFile -Force\r\n" +
+                "Start-Process -FilePath $Target\r\n" +
+                "Start-Sleep -Seconds 2\r\n" +
+                "try { Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force } catch {}\r\n";
+            File.WriteAllText(script, scriptText);
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = "powershell.exe";
+            psi.Arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File " + QuoteArg(script) +
+                " -ProcessId " + Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture) +
+                " -Target " + QuoteArg(currentExe) +
+                " -NewFile " + QuoteArg(newExe) +
+                " -Backup " + QuoteArg(backup);
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+            Process.Start(psi);
+            owner.Close();
+            Application.Exit();
+        }
+
+        private static string ConfigPath()
+        {
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigFileName);
+        }
+
+        private static void Report(Control owner, Action<string> report, string text)
+        {
+            if (owner == null || owner.IsDisposed || report == null)
+            {
+                return;
+            }
+            RunOnUi(owner, delegate { report(text); });
+        }
+
+        private static void ShowInfo(Control owner, string title, string message, Color accent)
+        {
+            RunOnUi(owner, delegate { ProDialog.ShowInfo(owner, title, message, accent); });
+        }
+
+        private static void RunOnUi(Control owner, Action action)
+        {
+            if (owner == null || owner.IsDisposed || action == null)
+            {
+                return;
+            }
+            try
+            {
+                if (owner.InvokeRequired)
+                {
+                    owner.BeginInvoke(new MethodInvoker(delegate { if (!owner.IsDisposed) action(); }));
+                }
+                else
+                {
+                    action();
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static void DeleteQuiet(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static string QuoteArg(string value)
+        {
+            return "\"" + (value ?? "").Replace("\"", "\\\"") + "\"";
         }
     }
 
@@ -601,16 +1117,29 @@ namespace UndertaleSaveStudioPro
 
     internal sealed class GradientHeader : Panel
     {
+        public GradientHeader()
+        {
+            DoubleBuffered = true;
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (LinearGradientBrush b = new LinearGradientBrush(ClientRectangle, Color.FromArgb(5, 8, 16), Color.FromArgb(96, 14, 42), 16f))
+            using (LinearGradientBrush b = new LinearGradientBrush(ClientRectangle, Color.FromArgb(4, 8, 18), Color.FromArgb(80, 9, 32), 9f))
             {
                 e.Graphics.FillRectangle(b, ClientRectangle);
             }
-            using (LinearGradientBrush sweep = new LinearGradientBrush(ClientRectangle, Color.FromArgb(0, 54, 151, 255), Color.FromArgb(72, 85, 220, 155), 0f))
+            using (LinearGradientBrush sweep = new LinearGradientBrush(ClientRectangle, Color.FromArgb(0, 54, 151, 255), Color.FromArgb(88, 54, 151, 255), 0f))
             {
                 e.Graphics.FillRectangle(sweep, Width - 360, 0, 360, Height);
+            }
+            using (Pen beam = new Pen(Color.FromArgb(125, 54, 151, 255), 2f))
+            {
+                e.Graphics.DrawLine(beam, 120, Height - 12, Width - 70, 14);
+            }
+            using (Pen beam = new Pen(Color.FromArgb(105, 255, 63, 92), 2f))
+            {
+                e.Graphics.DrawLine(beam, 0, 16, Width / 2, Height - 8);
             }
             using (Pen grid = new Pen(Color.FromArgb(20, 255, 255, 255), 1f))
             {
@@ -636,6 +1165,56 @@ namespace UndertaleSaveStudioPro
                 e.Graphics.DrawLine(p, 0, Height - 5, Width, Height - 5);
             }
             base.OnPaint(e);
+        }
+    }
+
+    internal sealed class NeonBodyPanel : Panel
+    {
+        public NeonBodyPanel()
+        {
+            DoubleBuffered = true;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle r = ClientRectangle;
+            using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(3, 6, 14), Color.FromArgb(11, 16, 30), 22f))
+            {
+                e.Graphics.FillRectangle(b, r);
+            }
+            using (Pen grid = new Pen(Color.FromArgb(18, 60, 150, 255), 1f))
+            {
+                for (int x = -Height; x < Width + Height; x += 64)
+                {
+                    e.Graphics.DrawLine(grid, x, Height, x + Height, 0);
+                }
+            }
+            using (Pen red = new Pen(Color.FromArgb(170, 255, 18, 70), 2f))
+            using (Pen blue = new Pen(Color.FromArgb(160, 0, 205, 255), 2f))
+            using (Pen green = new Pen(Color.FromArgb(125, 60, 255, 120), 2f))
+            {
+                e.Graphics.DrawLine(red, 0, 42, Width / 3, Height - 18);
+                e.Graphics.DrawLine(blue, Width / 4, 20, Width - 20, 2);
+                e.Graphics.DrawLine(green, Width / 2, Height - 32, Width - 80, Height - 98);
+            }
+
+            int[,] sparks = new int[,]
+            {
+                { 34, 610, 255, 63, 92 }, { 180, 110, 54, 151, 255 }, { 360, 42, 255, 195, 70 },
+                { 704, 92, 85, 220, 155 }, { 920, 540, 255, 63, 92 }, { 1190, 230, 54, 151, 255 },
+                { 1370, 620, 255, 195, 70 }, { 540, 690, 125, 112, 255 }, { 1020, 32, 85, 220, 155 }
+            };
+            for (int i = 0; i < sparks.GetLength(0); i++)
+            {
+                using (Pen p = new Pen(Color.FromArgb(210, sparks[i, 2], sparks[i, 3], sparks[i, 4]), 2f))
+                {
+                    int x = sparks[i, 0] % Math.Max(1, Width);
+                    int y = sparks[i, 1] % Math.Max(1, Height);
+                    e.Graphics.DrawLine(p, x, y, x + 16, y + 5);
+                }
+            }
         }
     }
 
@@ -667,6 +1246,7 @@ namespace UndertaleSaveStudioPro
         private CheckBox genocideToggle;
         private CheckBox customToggle;
         private CheckBox watchGameToggle;
+        private readonly ToolTip tips = new ToolTip();
         private readonly Timer gameWatchTimer = new Timer();
         private bool gameWasRunning;
         private bool gameWatchBackedUp;
@@ -678,10 +1258,10 @@ namespace UndertaleSaveStudioPro
 
         public MainForm()
         {
-            Text = "Undertale Save Studio Pro Max";
+            Text = "Undertale Mod Menu - Feature Vault Neon";
             StartPosition = FormStartPosition.CenterScreen;
-            MinimumSize = new Size(1240, 820);
-            Size = new Size(1320, 860);
+            MinimumSize = new Size(1440, 860);
+            Size = new Size(1540, 900);
             BackColor = Color.FromArgb(4, 6, 10);
             ForeColor = Color.White;
             Font = new Font("Segoe UI", 9.5f);
@@ -689,7 +1269,11 @@ namespace UndertaleSaveStudioPro
             gameWatchTimer.Tick += delegate { WatchGameTick(); };
             BuildUi();
             LoadLive();
-            Shown += delegate { ProDialog.ShowInfo(this, "SAVE STUDIO PRO MAX", "Loaded the native editor. Backups are made before live writes.\r\n\r\nFeature Vault adds 100,000+ one-click presets for stats, routes, flags, rooms, items, and battle state.", Color.FromArgb(255, 63, 92)); };
+            Shown += delegate
+            {
+                ProDialog.ShowInfo(this, "FEATURE VAULT MODE", "Quick path:\r\n\r\n1. Load your save.\r\n2. Pick a preset or type numbers.\r\n3. Press Write Save.\r\n\r\nBackups are made before live writes.", Color.FromArgb(54, 151, 255));
+                SelfUpdater.CheckForUpdates(this, delegate(string text) { statusLabel.Text = text; }, false);
+            };
         }
 
         private void BuildUi()
@@ -698,45 +1282,45 @@ namespace UndertaleSaveStudioPro
 
             GradientHeader header = new GradientHeader();
             header.Location = new Point(0, 0);
-            header.Size = new Size(ClientSize.Width, 118);
+            header.Size = new Size(ClientSize.Width, 96);
             header.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             Controls.Add(header);
 
             Label title = new Label();
-            title.Text = "SAVE STUDIO PRO MAX";
-            title.Font = new Font("Segoe UI Semibold", 26f, FontStyle.Bold);
+            title.Text = "UNDERTALE MOD MENU";
+            title.Font = new Font("Segoe UI Semibold", 22f, FontStyle.Bold);
             title.ForeColor = Color.White;
             title.AutoSize = true;
             title.Location = new Point(28, 12);
             header.Controls.Add(title);
 
             Label badge = new Label();
-            badge.Text = "LIVE HOOK V2";
+            badge.Text = "NEON VAULT MODE";
             badge.Font = new Font("Segoe UI Semibold", 8f, FontStyle.Bold);
             badge.ForeColor = Color.FromArgb(255, 214, 120);
             badge.BackColor = Color.FromArgb(28, 10, 16);
             badge.TextAlign = ContentAlignment.MiddleCenter;
-            badge.Location = new Point(430, 28);
-            badge.Size = new Size(112, 24);
+            badge.Location = new Point(392, 24);
+            badge.Size = new Size(150, 24);
             header.Controls.Add(badge);
 
             Label featureBadge = new Label();
-            featureBadge.Text = "100+ FEATURES";
+            featureBadge.Text = "100K+ FEATURES";
             featureBadge.Font = new Font("Segoe UI Semibold", 8f, FontStyle.Bold);
             featureBadge.ForeColor = Color.FromArgb(170, 230, 255);
             featureBadge.BackColor = Color.FromArgb(8, 24, 38);
             featureBadge.TextAlign = ContentAlignment.MiddleCenter;
-            featureBadge.Location = new Point(552, 28);
-            featureBadge.Size = new Size(118, 24);
+            featureBadge.Location = new Point(552, 24);
+            featureBadge.Size = new Size(132, 24);
             header.Controls.Add(featureBadge);
 
             savePathLabel = new Label();
             savePathLabel.Text = model.SaveDir;
             savePathLabel.ForeColor = Color.FromArgb(210, 210, 218);
             savePathLabel.AutoSize = false;
-            savePathLabel.Width = 720;
+            savePathLabel.Width = 780;
             savePathLabel.Height = 32;
-            savePathLabel.Location = new Point(32, 76);
+            savePathLabel.Location = new Point(32, 61);
             header.Controls.Add(savePathLabel);
 
             FlowLayoutPanel headerButtons = new FlowLayoutPanel();
@@ -744,16 +1328,22 @@ namespace UndertaleSaveStudioPro
             headerButtons.WrapContents = false;
             headerButtons.AutoSize = true;
             headerButtons.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            headerButtons.Location = new Point(Math.Max(720, ClientSize.Width - 430), 34);
+            headerButtons.Location = new Point(Math.Max(900, ClientSize.Width - 430), 28);
             header.Controls.Add(headerButtons);
 
-            headerButtons.Controls.Add(MakeButton("Load Live", LoadLive, Color.FromArgb(54, 151, 255)));
-            headerButtons.Controls.Add(MakeButton("Choose Folder", ChooseFolder, Color.FromArgb(125, 112, 255)));
-            headerButtons.Controls.Add(MakeButton("Open Folder", OpenFolder, Color.FromArgb(85, 220, 155)));
+            Button loadHeader = MakeButton("1 Load Save", LoadLive, Color.FromArgb(54, 151, 255));
+            Button folderHeader = MakeButton("Find Folder", ChooseFolder, Color.FromArgb(125, 112, 255));
+            Button guideHeader = MakeButton("Player Guide", OpenPlayerGuide, Color.FromArgb(85, 220, 155));
+            headerButtons.Controls.Add(loadHeader);
+            headerButtons.Controls.Add(folderHeader);
+            headerButtons.Controls.Add(guideHeader);
+            tips.SetToolTip(loadHeader, "Reload undertale.ini, file0, and file9 from the selected save folder.");
+            tips.SetToolTip(folderHeader, "Pick a different Undertale save folder.");
+            tips.SetToolTip(guideHeader, "Open the simple player guide.");
 
-            Panel body = new Panel();
-            body.Location = new Point(0, 118);
-            body.Size = new Size(ClientSize.Width, ClientSize.Height - 118);
+            Panel body = new NeonBodyPanel();
+            body.Location = new Point(0, 96);
+            body.Size = new Size(ClientSize.Width, ClientSize.Height - 96);
             body.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             body.AutoScroll = true;
             body.BackColor = Color.FromArgb(4, 6, 10);
@@ -761,72 +1351,84 @@ namespace UndertaleSaveStudioPro
 
             Label powerTitle = new Label();
             powerTitle.Text = "Player Numbers";
-            powerTitle.Font = new Font("Segoe UI Semibold", 14f, FontStyle.Bold);
+            powerTitle.Font = new Font("Segoe UI Semibold", 17f, FontStyle.Bold);
             powerTitle.ForeColor = Color.White;
             powerTitle.AutoSize = true;
-            powerTitle.Location = new Point(28, 24);
+            powerTitle.Location = new Point(28, 20);
             body.Controls.Add(powerTitle);
 
             Label powerHint = new Label();
-            powerHint.Text = "Type the exact values you want saved.";
-            powerHint.Font = new Font("Segoe UI", 9f);
+            powerHint.Text = "Type values here. Nothing changes until Write Save.";
+            powerHint.Font = new Font("Segoe UI", 9.5f);
             powerHint.ForeColor = Color.FromArgb(160, 164, 176);
             powerHint.AutoSize = true;
             powerHint.Location = new Point(30, 50);
             body.Controls.Add(powerHint);
 
-            lvBox = AddMainNumber(body, "LEVEL", 28, 66);
-            hpBox = AddMainNumber(body, "HP", 314, 66);
-            xpBox = AddMainNumber(body, "EXP", 28, 176);
-            goldBox = AddMainNumber(body, "GOLD", 314, 176);
-            dmgBox = AddMainNumber(body, "DMG", 28, 286);
+            lvBox = AddMainNumber(body, "LEVEL", 28, 82);
+            hpBox = AddMainNumber(body, "HP", 28, 192);
+            xpBox = AddMainNumber(body, "EXP", 28, 302);
+            goldBox = AddMainNumber(body, "GOLD", 28, 412);
+            dmgBox = AddMainNumber(body, "DMG", 28, 522);
 
-            Button write = MakeWideButton("Write Save", delegate { WriteSave(); }, Color.FromArgb(255, 63, 92));
-            write.Width = 556;
-            write.Height = 60;
-            write.Location = new Point(28, 406);
+            Button write = MakeWideButton("WRITE SAVE", delegate { WriteSave(); }, Color.FromArgb(255, 63, 92));
+            write.Width = 350;
+            write.Height = 56;
+            write.Location = new Point(28, 636);
             body.Controls.Add(write);
+            tips.SetToolTip(write, "Writes the values to Undertale after creating a backup.");
 
-            Button uncap = MakeWideButton("Set All To 999,999,999", delegate { UncapPower(); }, Color.FromArgb(255, 195, 70));
-            uncap.Width = 270;
-            uncap.Location = new Point(28, 482);
+            Button uncap = MakeWideButton("999,999,999 MAX", delegate { UncapPower(); }, Color.FromArgb(0, 205, 255));
+            uncap.Width = 350;
+            uncap.Location = new Point(28, 704);
             body.Controls.Add(uncap);
+            tips.SetToolTip(uncap, "Set LV, HP, EXP, gold, and damage to 999,999,999.");
 
-            Button randomNumbers = MakeWideButton("Randomize Numbers", delegate { RandomizeVisibleNumbers(); }, Color.FromArgb(85, 220, 155));
-            randomNumbers.Width = 270;
-            randomNumbers.Location = new Point(314, 482);
-            body.Controls.Add(randomNumbers);
+            Panel hero = MakeFeatureVaultHero();
+            hero.Location = new Point(410, 22);
+            body.Controls.Add(hero);
+
+            Panel easyPanel = MakeEasyStartPanel();
+            easyPanel.Location = new Point(410, 376);
+            body.Controls.Add(easyPanel);
+
+            Panel bottomBar = MakeBottomActionBar();
+            bottomBar.Location = new Point(410, 704);
+            body.Controls.Add(bottomBar);
 
             Label toggleTitle = new Label();
             toggleTitle.Text = "Control Center";
-            toggleTitle.Font = new Font("Segoe UI Semibold", 14f, FontStyle.Bold);
+            toggleTitle.Font = new Font("Segoe UI Semibold", 17f, FontStyle.Bold);
             toggleTitle.ForeColor = Color.White;
             toggleTitle.AutoSize = true;
-            toggleTitle.Location = new Point(640, 24);
+            toggleTitle.Location = new Point(970, 20);
             body.Controls.Add(toggleTitle);
 
             Label toggleHint = new Label();
-            toggleHint.Text = "Routes, hooks, inventory, chaos, and the 100K+ Feature Vault.";
+            toggleHint.Text = "Pick a route, then use the big tool buttons below.";
             toggleHint.Font = new Font("Segoe UI", 9f);
             toggleHint.ForeColor = Color.FromArgb(160, 164, 176);
             toggleHint.AutoSize = true;
-            toggleHint.Location = new Point(642, 50);
+            toggleHint.Location = new Point(972, 50);
             body.Controls.Add(toggleHint);
 
-            int tx = 640;
-            int ty = 66;
+            int tx = 970;
+            int ty = 82;
             syncLv = MakeToggle("Sync LV Stats", true, Color.FromArgb(54, 151, 255));
             syncLv.Location = new Point(tx, ty);
             body.Controls.Add(syncLv);
+            tips.SetToolTip(syncLv, "When ON, changing LV automatically fills normal HP, EXP, and damage.");
 
             mirrorFile9 = MakeToggle("Mirror file9", true, Color.FromArgb(85, 220, 155));
             mirrorFile9.Location = new Point(tx + 170, ty);
             body.Controls.Add(mirrorFile9);
+            tips.SetToolTip(mirrorFile9, "Write the same save data to file9 too. Recommended.");
 
             watchGameToggle = MakeToggle("Watch Game", false, Color.FromArgb(255, 63, 92));
             watchGameToggle.Location = new Point(tx + 340, ty);
             watchGameToggle.CheckedChanged += delegate { ToggleGameWatch(); };
             body.Controls.Add(watchGameToggle);
+            tips.SetToolTip(watchGameToggle, "Wait for Undertale to launch and auto-refresh the edited save/live config.");
 
             ty += 62;
             pacifistToggle = MakeToggle("Pacifist", false, Color.FromArgb(85, 220, 155));
@@ -855,52 +1457,74 @@ namespace UndertaleSaveStudioPro
             vault.Width = 500;
             vault.Location = new Point(tx, ty);
             body.Controls.Add(vault);
+            tips.SetToolTip(vault, "Search big one-click presets for routes, flags, stats, rooms, and inventory.");
 
             ty += 58;
             Button modHub = MakeWideButton("GameJolt Mod Hub", delegate { OpenGameJoltModHub(); }, Color.FromArgb(85, 220, 155));
             modHub.Width = 500;
             modHub.Location = new Point(tx, ty);
             body.Controls.Add(modHub);
+            tips.SetToolTip(modHub, "Browse GameJolt Undertale projects and install downloaded ZIP/folder mods safely.");
 
             ty += 58;
             Button chaos = MakeWideButton("Chaos Console", delegate { OpenChaosConsole(); }, Color.FromArgb(255, 63, 92));
             chaos.Width = 330;
             chaos.Location = new Point(tx, ty);
             body.Controls.Add(chaos);
+            tips.SetToolTip(chaos, "Randomizers and advanced save experiments.");
 
             ty += 58;
             inventoryButton = MakeWideButton("Inventory Forge", delegate { OpenInventoryForge(); }, Color.FromArgb(255, 195, 70));
             inventoryButton.Width = 330;
             inventoryButton.Location = new Point(tx, ty);
             body.Controls.Add(inventoryButton);
+            tips.SetToolTip(inventoryButton, "Give yourself regular Undertale items or raw mod-token IDs.");
 
             ty += 58;
-            Button newShell = MakeWideButton("New File0 Shell", delegate { NewShell(); }, Color.FromArgb(125, 112, 255));
+            Button newShell = MakeWideButton("New Save Shell", delegate { NewShell(); }, Color.FromArgb(125, 112, 255));
             newShell.Width = 160;
             newShell.Location = new Point(tx, ty);
             body.Controls.Add(newShell);
+            tips.SetToolTip(newShell, "Create a fresh editable save in memory. It writes only after Write Save.");
 
             Button import = MakeWideButton("Import file0", delegate { ImportFile0(); }, Color.FromArgb(54, 151, 255));
             import.Width = 160;
             import.Location = new Point(tx + 170, ty);
             body.Controls.Add(import);
+            tips.SetToolTip(import, "Import an existing file0 or file9 manually.");
 
             ty += 58;
             Button randomFun = MakeWideButton("Random FUN", delegate { RandomFun(); }, Color.FromArgb(85, 220, 155));
             randomFun.Width = 160;
             randomFun.Location = new Point(tx, ty);
             body.Controls.Add(randomFun);
+            tips.SetToolTip(randomFun, "Randomize the Undertale FUN value.");
 
             Button god = MakeWideButton("God Preset", delegate { ApplyGodPresetFromMain(); }, Color.FromArgb(255, 63, 92));
             god.Width = 160;
             god.Location = new Point(tx + 170, ty);
             body.Controls.Add(god);
+            tips.SetToolTip(god, "Max out the big number boxes in memory.");
 
             ty += 58;
             Button hook = MakeWideButton("Install Live Hook", delegate { InstallLiveHookMod(); }, Color.FromArgb(255, 195, 70));
             hook.Width = 330;
             hook.Location = new Point(tx, ty);
             body.Controls.Add(hook);
+            tips.SetToolTip(hook, "Advanced: patch data.win so live config values can apply while Undertale is running.");
+
+            ty += 58;
+            Button updateNow = MakeWideButton("Check GitHub Update", delegate { CheckGitHubUpdateNow(); }, Color.FromArgb(54, 151, 255));
+            updateNow.Width = 160;
+            updateNow.Location = new Point(tx, ty);
+            body.Controls.Add(updateNow);
+            tips.SetToolTip(updateNow, "Check GitHub for a newer EXE.");
+
+            Button updateSettings = MakeWideButton("Update Settings", delegate { OpenUpdateSettings(); }, Color.FromArgb(125, 112, 255));
+            updateSettings.Width = 160;
+            updateSettings.Location = new Point(tx + 170, ty);
+            body.Controls.Add(updateSettings);
+            tips.SetToolTip(updateSettings, "Open update.ini beside the EXE.");
 
             statusLabel = new Label();
             statusLabel.Text = "";
@@ -908,11 +1532,12 @@ namespace UndertaleSaveStudioPro
             statusLabel.BackColor = Color.FromArgb(13, 15, 22);
             statusLabel.BorderStyle = BorderStyle.FixedSingle;
             statusLabel.AutoSize = false;
-            statusLabel.Width = 556;
-            statusLabel.Height = 86;
-            statusLabel.Location = new Point(28, 558);
+            statusLabel.Width = 520;
+            statusLabel.Height = 94;
+            statusLabel.Location = new Point(410, 594);
             statusLabel.Padding = new Padding(12);
             body.Controls.Add(statusLabel);
+            body.AutoScrollMinSize = new Size(0, 830);
 
             nameBox = HiddenTextBox();
             funBox = HiddenNumber(1, 100, 1);
@@ -939,6 +1564,319 @@ namespace UndertaleSaveStudioPro
             };
         }
 
+        private Panel MakeFeatureVaultHero()
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(520, 330);
+            panel.BackColor = Color.FromArgb(5, 7, 14);
+            panel.Paint += delegate(object sender, PaintEventArgs e)
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
+                Point[] shell = new Point[]
+                {
+                    new Point(28, 8),
+                    new Point(panel.Width - 1, 0),
+                    new Point(panel.Width - 24, panel.Height - 1),
+                    new Point(0, panel.Height - 20)
+                };
+                using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(12, 18, 36), Color.FromArgb(5, 7, 14), 70f))
+                {
+                    e.Graphics.FillPolygon(b, shell);
+                }
+                using (Pen outer = new Pen(Color.FromArgb(230, 54, 151, 255), 3f))
+                using (Pen inner = new Pen(Color.FromArgb(180, 255, 63, 220), 2f))
+                using (Pen green = new Pen(Color.FromArgb(190, 90, 255, 0), 3f))
+                {
+                    e.Graphics.DrawPolygon(outer, shell);
+                    e.Graphics.DrawLine(inner, 16, panel.Height - 24, panel.Width - 120, panel.Height - 60);
+                    e.Graphics.DrawLine(green, 88, 220, panel.Width - 18, 188);
+                }
+                using (Pen shine = new Pen(Color.FromArgb(150, 255, 255, 255), 1f))
+                {
+                    e.Graphics.DrawLine(shine, 40, 22, panel.Width - 70, 8);
+                }
+            };
+
+            Label feature = new Label();
+            feature.Text = "FEATURE";
+            feature.Font = new Font("Arial Black", 45f, FontStyle.Bold);
+            feature.ForeColor = Color.White;
+            feature.BackColor = Color.Transparent;
+            feature.AutoSize = true;
+            feature.Location = new Point(46, 38);
+            panel.Controls.Add(feature);
+
+            Label vault = new Label();
+            vault.Text = "VAULT";
+            vault.Font = new Font("Arial Black", 66f, FontStyle.Bold);
+            vault.ForeColor = Color.FromArgb(105, 255, 18);
+            vault.BackColor = Color.Transparent;
+            vault.AutoSize = true;
+            vault.Location = new Point(44, 108);
+            panel.Controls.Add(vault);
+
+            Label mod = new Label();
+            mod.Text = "100K+ MOD MENU";
+            mod.Font = new Font("Arial Black", 24f, FontStyle.Bold);
+            mod.ForeColor = Color.FromArgb(255, 214, 0);
+            mod.BackColor = Color.Transparent;
+            mod.AutoSize = true;
+            mod.Location = new Point(62, 242);
+            panel.Controls.Add(mod);
+
+            Label hint = new Label();
+            hint.Text = "Uncapped stats, routes, hooks, inventory, chaos";
+            hint.Font = new Font("Segoe UI Semibold", 9f, FontStyle.Bold);
+            hint.ForeColor = Color.FromArgb(185, 220, 255);
+            hint.BackColor = Color.Transparent;
+            hint.AutoSize = true;
+            hint.Location = new Point(72, 288);
+            panel.Controls.Add(hint);
+
+            return panel;
+        }
+
+        private Panel MakeBottomActionBar()
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(520, 74);
+            panel.BackColor = Color.FromArgb(5, 7, 14);
+            panel.Paint += delegate(object sender, PaintEventArgs e)
+            {
+                Rectangle r = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
+                using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(20, 8, 18), Color.FromArgb(5, 8, 16), 0f))
+                {
+                    e.Graphics.FillRectangle(b, r);
+                }
+                using (Pen p = new Pen(Color.FromArgb(190, 255, 63, 92), 2f))
+                {
+                    e.Graphics.DrawRectangle(p, r);
+                }
+            };
+
+            Button chaos = MakeWideButton("CHAOS", delegate { OpenChaosConsole(); }, Color.FromArgb(255, 63, 92));
+            chaos.Size = new Size(118, 48);
+            chaos.Location = new Point(12, 13);
+            panel.Controls.Add(chaos);
+
+            Button forge = MakeWideButton("FORGE", delegate { OpenInventoryForge(); }, Color.FromArgb(255, 195, 70));
+            forge.Size = new Size(118, 48);
+            forge.Location = new Point(142, 13);
+            panel.Controls.Add(forge);
+
+            Button god = MakeWideButton("GOD", delegate { ApplyGodPresetFromMain(); }, Color.FromArgb(255, 63, 92));
+            god.Size = new Size(118, 48);
+            god.Location = new Point(272, 13);
+            panel.Controls.Add(god);
+
+            Button random = MakeWideButton("RANDOM", delegate { RandomizeVisibleNumbers(); }, Color.FromArgb(0, 205, 255));
+            random.Size = new Size(118, 48);
+            random.Location = new Point(390, 13);
+            panel.Controls.Add(random);
+
+            return panel;
+        }
+
+        private Panel MakeEasyStartPanel()
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(520, 190);
+            panel.BackColor = Color.FromArgb(12, 17, 28);
+            panel.Paint += delegate(object sender, PaintEventArgs e)
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
+                using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(22, 28, 40), Color.FromArgb(8, 10, 16), 90f))
+                {
+                    e.Graphics.FillRectangle(b, r);
+                }
+                using (Pen glow = new Pen(Color.FromArgb(120, 54, 151, 255), 2f))
+                {
+                    e.Graphics.DrawLine(glow, 0, 0, panel.Width, 0);
+                }
+                using (Pen border = new Pen(Color.FromArgb(72, 85, 220, 155), 1f))
+                {
+                    e.Graphics.DrawRectangle(border, r);
+                }
+            };
+
+            Label title = new Label();
+            title.Text = "Preset Tiles";
+            title.Font = new Font("Segoe UI Semibold", 11f, FontStyle.Bold);
+            title.ForeColor = Color.White;
+            title.Location = new Point(14, 10);
+            title.AutoSize = true;
+            panel.Controls.Add(title);
+
+            Label hint = new Label();
+            hint.Text = "Fast thumbnail-style boosts. Nothing writes until Write Save.";
+            hint.Font = new Font("Segoe UI", 8.5f);
+            hint.ForeColor = Color.FromArgb(168, 174, 190);
+            hint.Location = new Point(112, 13);
+            hint.AutoSize = true;
+            panel.Controls.Add(hint);
+
+            Button fresh = MakeWideButton("Fresh Start", delegate { ApplySafeStartPreset(); }, Color.FromArgb(0, 205, 255));
+            fresh.Size = new Size(158, 50);
+            fresh.Location = new Point(14, 48);
+            panel.Controls.Add(fresh);
+
+            Button ruins = MakeWideButton("Ruins Boost", delegate { ApplyRuinsBoostPreset(); }, Color.FromArgb(125, 112, 255));
+            ruins.Size = new Size(158, 50);
+            ruins.Location = new Point(181, 48);
+            panel.Controls.Add(ruins);
+
+            Button judgement = MakeWideButton("Judgement", delegate { ApplyJudgementPreset(); }, Color.FromArgb(255, 63, 92));
+            judgement.Size = new Size(158, 50);
+            judgement.Location = new Point(348, 48);
+            panel.Controls.Add(judgement);
+
+            Button sans = MakeWideButton("Sans Practice", delegate { ApplySansPracticePreset(); }, Color.FromArgb(0, 205, 255));
+            sans.Size = new Size(158, 50);
+            sans.Location = new Point(14, 116);
+            panel.Controls.Add(sans);
+
+            Button omega = MakeWideButton("Omega Ready", delegate { ApplyOmegaReadyPreset(); }, Color.FromArgb(85, 220, 155));
+            omega.Size = new Size(158, 50);
+            omega.Location = new Point(181, 116);
+            panel.Controls.Add(omega);
+
+            Button absolute = MakeWideButton("Absolute Max", delegate { UncapPower(); }, Color.FromArgb(255, 195, 70));
+            absolute.Size = new Size(158, 50);
+            absolute.Location = new Point(348, 116);
+            panel.Controls.Add(absolute);
+
+            tips.SetToolTip(fresh, "Set a clean LV1 pacifist-style save in memory.");
+            tips.SetToolTip(ruins, "Set a stronger early-game build in memory.");
+            tips.SetToolTip(judgement, "Set late-game judgement-style room and power values in memory.");
+            tips.SetToolTip(sans, "Set a high HP and damage practice build in memory.");
+            tips.SetToolTip(omega, "Set a near-final battle-ready build in memory.");
+            tips.SetToolTip(absolute, "Max out the big player number boxes.");
+            return panel;
+        }
+
+        private void OpenPlayerGuide()
+        {
+            using (PlayerGuideForm f = new PlayerGuideForm())
+            {
+                f.ShowDialog(this);
+            }
+        }
+
+        private bool EnsureEasySaveShell(string title, Color accent)
+        {
+            if (model.HasFile0)
+            {
+                return true;
+            }
+            if (!ProDialog.ShowConfirm(this, title, "No file0/file9 is loaded yet.\r\n\r\nCreate a fresh editable save shell in memory? It will not touch disk until Write Save.", accent))
+            {
+                return false;
+            }
+            model.CreateShell();
+            PullToUi();
+            return true;
+        }
+
+        private void ApplySafeStartPreset()
+        {
+            if (!EnsureEasySaveShell("CREATE SAFE START", Color.FromArgb(85, 220, 155)))
+            {
+                return;
+            }
+            lvBox.Value = 1;
+            hpBox.Value = 20;
+            xpBox.Value = 0;
+            goldBox.Value = 0;
+            dmgBox.Value = 10;
+            killsBox.Value = 0;
+            murderBox.Value = 0;
+            plotBox.Value = 0;
+            roomBox.Value = 4;
+            timeBox.Value = 0;
+            syncLv.Checked = true;
+            SetRouteToggleStates(0);
+            routeBox.SelectedIndex = 0;
+            statusLabel.Text = "Safe Start is ready in memory. Press Write Save when you want to commit it.";
+        }
+
+        private void ApplyRuinsBoostPreset()
+        {
+            if (!EnsureEasySaveShell("RUINS BOOST", Color.FromArgb(125, 112, 255)))
+            {
+                return;
+            }
+            syncLv.Checked = false;
+            SetRouteToggleStates(3);
+            routeBox.SelectedIndex = 3;
+            lvBox.Value = 5;
+            hpBox.Value = 60;
+            xpBox.Value = 250;
+            goldBox.Value = 500;
+            dmgBox.Value = 25;
+            roomBox.Value = 4;
+            statusLabel.Text = "Ruins Boost is ready in memory. Press Write Save when you want to commit it.";
+        }
+
+        private void ApplyJudgementPreset()
+        {
+            if (!EnsureEasySaveShell("JUDGEMENT PRESET", Color.FromArgb(255, 63, 92)))
+            {
+                return;
+            }
+            syncLv.Checked = false;
+            SetRouteToggleStates(1);
+            routeBox.SelectedIndex = 1;
+            lvBox.Value = 19;
+            hpBox.Value = 92;
+            xpBox.Value = 50000;
+            goldBox.Value = 9999;
+            dmgBox.Value = 99;
+            plotBox.Value = 999;
+            roomBox.Value = 231;
+            statusLabel.Text = "Judgement preset is ready in memory. Press Write Save when you want to commit it.";
+        }
+
+        private void ApplySansPracticePreset()
+        {
+            if (!EnsureEasySaveShell("SANS PRACTICE", Color.FromArgb(0, 205, 255)))
+            {
+                return;
+            }
+            syncLv.Checked = false;
+            SetRouteToggleStates(2);
+            routeBox.SelectedIndex = 2;
+            lvBox.Value = 19;
+            hpBox.Value = 999;
+            xpBox.Value = 50000;
+            goldBox.Value = 9999;
+            dmgBox.Value = 999;
+            killsBox.Value = 100;
+            murderBox.Value = 16;
+            roomBox.Value = 231;
+            statusLabel.Text = "Sans Practice is ready in memory. Press Write Save when you want to commit it.";
+        }
+
+        private void ApplyOmegaReadyPreset()
+        {
+            if (!EnsureEasySaveShell("OMEGA READY", Color.FromArgb(85, 220, 155)))
+            {
+                return;
+            }
+            syncLv.Checked = false;
+            SetRouteToggleStates(1);
+            routeBox.SelectedIndex = 1;
+            lvBox.Value = 17;
+            hpBox.Value = 250;
+            xpBox.Value = 25000;
+            goldBox.Value = 5000;
+            dmgBox.Value = 150;
+            plotBox.Value = 200;
+            roomBox.Value = 220;
+            statusLabel.Text = "Omega Ready is ready in memory. Press Write Save when you want to commit it.";
+        }
+
         private NumericUpDown AddMainNumber(Control parent, string labelText, int x, int y)
         {
             Color accent = Color.FromArgb(54, 151, 255);
@@ -949,36 +1887,43 @@ namespace UndertaleSaveStudioPro
 
             Panel card = new Panel();
             card.Location = new Point(x, y);
-            card.Size = new Size(270, 92);
+            card.Size = new Size(350, 92);
             card.BackColor = Color.FromArgb(10, 13, 22);
             card.Paint += delegate(object sender, PaintEventArgs e)
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 Rectangle r = new Rectangle(0, 0, card.Width - 1, card.Height - 1);
+                Point[] shell = new Point[]
+                {
+                    new Point(12, 0),
+                    new Point(card.Width - 1, 0),
+                    new Point(card.Width - 12, card.Height - 1),
+                    new Point(0, card.Height - 1)
+                };
                 using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(24, 29, 42), Color.FromArgb(7, 9, 15), 90f))
                 {
-                    e.Graphics.FillRectangle(b, r);
+                    e.Graphics.FillPolygon(b, shell);
                 }
                 using (SolidBrush wash = new SolidBrush(Color.FromArgb(22, accent)))
                 {
-                    e.Graphics.FillRectangle(wash, 0, 0, card.Width, card.Height);
+                    e.Graphics.FillPolygon(wash, shell);
                 }
-                using (Pen glow = new Pen(Color.FromArgb(150, accent), 2f))
+                using (Pen glow = new Pen(Color.FromArgb(230, accent), 3f))
                 {
-                    e.Graphics.DrawLine(glow, 0, 0, card.Width, 0);
+                    e.Graphics.DrawPolygon(glow, shell);
                 }
-                using (Pen border = new Pen(Color.FromArgb(68, 72, 88), 1f))
+                using (Pen shine = new Pen(Color.FromArgb(90, 255, 255, 255), 1f))
                 {
-                    e.Graphics.DrawRectangle(border, r);
+                    e.Graphics.DrawLine(shine, 20, 8, card.Width - 40, 3);
                 }
             };
             parent.Controls.Add(card);
 
             Label label = new Label();
             label.Text = labelText;
-            label.Font = new Font("Segoe UI Semibold", 10f, FontStyle.Bold);
-            label.ForeColor = Color.FromArgb(190, 190, 202);
-            label.Location = new Point(16, 12);
+            label.Font = new Font("Segoe UI Semibold", 13f, FontStyle.Bold);
+            label.ForeColor = accent;
+            label.Location = new Point(20, 10);
             label.AutoSize = true;
             card.Controls.Add(label);
 
@@ -987,9 +1932,9 @@ namespace UndertaleSaveStudioPro
             box.Maximum = PowerMax;
             box.Value = 0;
             box.ThousandsSeparator = true;
-            box.Font = new Font("Segoe UI Semibold", 16f, FontStyle.Bold);
-            box.Location = new Point(16, 42);
-            box.Width = 238;
+            box.Font = new Font("Segoe UI Semibold", 17f, FontStyle.Bold);
+            box.Location = new Point(20, 42);
+            box.Width = 306;
             box.Height = 40;
             box.BackColor = Color.FromArgb(6, 6, 9);
             box.ForeColor = Color.White;
@@ -1022,38 +1967,38 @@ namespace UndertaleSaveStudioPro
             toggle.Appearance = Appearance.Button;
             toggle.Text = text;
             toggle.Checked = isChecked;
-            toggle.Width = 160;
-            toggle.Height = 50;
+            toggle.Width = 166;
+            toggle.Height = 52;
             toggle.TextAlign = ContentAlignment.MiddleCenter;
             toggle.FlatStyle = FlatStyle.Flat;
             toggle.FlatAppearance.BorderSize = 2;
             toggle.FlatAppearance.BorderColor = accent;
-            toggle.BackColor = Color.FromArgb(20, 20, 26);
+            toggle.BackColor = Color.FromArgb(8, 10, 18);
             toggle.ForeColor = Color.White;
             toggle.Font = new Font("Segoe UI Semibold", 9.5f, FontStyle.Bold);
             toggle.Cursor = Cursors.Hand;
             toggle.CheckedChanged += delegate
             {
                 toggle.Text = (toggle.Checked ? "ON  " : "OFF  ") + text;
-                toggle.BackColor = toggle.Checked ? Color.FromArgb(Math.Min(255, accent.R / 2 + 38), Math.Min(255, accent.G / 2 + 32), Math.Min(255, accent.B / 2 + 38)) : Color.FromArgb(20, 20, 26);
+                toggle.BackColor = toggle.Checked ? Color.FromArgb(Math.Min(255, accent.R / 2 + 38), Math.Min(255, accent.G / 2 + 32), Math.Min(255, accent.B / 2 + 38)) : Color.FromArgb(8, 10, 18);
                 toggle.ForeColor = toggle.Checked ? Color.White : Color.FromArgb(200, 204, 214);
             };
             toggle.MouseEnter += delegate
             {
                 if (!toggle.Checked)
                 {
-                    toggle.BackColor = Color.FromArgb(30, 32, 42);
+                    toggle.BackColor = Color.FromArgb(20, 25, 38);
                 }
             };
             toggle.MouseLeave += delegate
             {
                 if (!toggle.Checked)
                 {
-                    toggle.BackColor = Color.FromArgb(20, 20, 26);
+                    toggle.BackColor = Color.FromArgb(8, 10, 18);
                 }
             };
             toggle.Text = (toggle.Checked ? "ON  " : "OFF  ") + text;
-            toggle.BackColor = toggle.Checked ? Color.FromArgb(Math.Min(255, accent.R / 2 + 38), Math.Min(255, accent.G / 2 + 32), Math.Min(255, accent.B / 2 + 38)) : Color.FromArgb(20, 20, 26);
+            toggle.BackColor = toggle.Checked ? Color.FromArgb(Math.Min(255, accent.R / 2 + 38), Math.Min(255, accent.G / 2 + 32), Math.Min(255, accent.B / 2 + 38)) : Color.FromArgb(8, 10, 18);
             toggle.ForeColor = toggle.Checked ? Color.White : Color.FromArgb(200, 204, 214);
             return toggle;
         }
@@ -1367,9 +2312,11 @@ namespace UndertaleSaveStudioPro
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderColor = accent;
             b.FlatAppearance.BorderSize = 2;
-            b.BackColor = Color.FromArgb(12, 17, 28);
+            b.FlatAppearance.MouseOverBackColor = Color.FromArgb(Math.Min(255, accent.R / 3 + 28), Math.Min(255, accent.G / 3 + 28), Math.Min(255, accent.B / 3 + 34));
+            b.FlatAppearance.MouseDownBackColor = Color.FromArgb(Math.Min(255, accent.R / 2 + 38), Math.Min(255, accent.G / 2 + 32), Math.Min(255, accent.B / 2 + 38));
+            b.BackColor = Color.FromArgb(7, 10, 18);
             b.ForeColor = Color.White;
-            b.Font = new Font("Segoe UI Semibold", 9.5f, FontStyle.Bold);
+            b.Font = new Font("Segoe UI Semibold", 9.8f, FontStyle.Bold);
             b.Cursor = Cursors.Hand;
             b.TextAlign = ContentAlignment.MiddleCenter;
             b.MouseEnter += delegate
@@ -1378,7 +2325,7 @@ namespace UndertaleSaveStudioPro
             };
             b.MouseLeave += delegate
             {
-                b.BackColor = Color.FromArgb(12, 17, 28);
+                b.BackColor = Color.FromArgb(7, 10, 18);
             };
         }
 
@@ -1589,6 +2536,18 @@ namespace UndertaleSaveStudioPro
             }
         }
 
+        private void CheckGitHubUpdateNow()
+        {
+            statusLabel.Text = "Checking GitHub for a newer EXE...";
+            SelfUpdater.CheckForUpdates(this, delegate(string text) { statusLabel.Text = text; }, true);
+        }
+
+        private void OpenUpdateSettings()
+        {
+            SelfUpdater.OpenConfig();
+            statusLabel.Text = "Opened update.ini. Add your GitHub owner/repo or direct latest-release EXE URL.";
+        }
+
         private void OpenChaosConsole()
         {
             if (!model.HasFile0)
@@ -1763,6 +2722,186 @@ namespace UndertaleSaveStudioPro
             {
                 ProDialog.ShowInfo(this, "WRITE FAILED", ex.Message, Color.FromArgb(255, 195, 70));
             }
+        }
+    }
+
+    internal sealed class PlayerGuideForm : Form
+    {
+        public PlayerGuideForm()
+        {
+            Text = "Player Guide";
+            StartPosition = FormStartPosition.CenterParent;
+            MinimumSize = new Size(760, 560);
+            Size = new Size(820, 600);
+            BackColor = Color.FromArgb(4, 6, 10);
+            ForeColor = Color.White;
+            Font = new Font("Segoe UI", 9.5f);
+            BuildUi();
+        }
+
+        private void BuildUi()
+        {
+            GradientHeader header = new GradientHeader();
+            header.Dock = DockStyle.Top;
+            header.Height = 110;
+            Controls.Add(header);
+
+            Label title = new Label();
+            title.Text = "PLAYER GUIDE";
+            title.Font = new Font("Segoe UI Semibold", 25f, FontStyle.Bold);
+            title.ForeColor = Color.White;
+            title.AutoSize = true;
+            title.Location = new Point(28, 18);
+            header.Controls.Add(title);
+
+            Label sub = new Label();
+            sub.Text = "Simple path for players: load, pick, write. Backups happen before live writes.";
+            sub.Font = new Font("Segoe UI", 9.5f);
+            sub.ForeColor = Color.FromArgb(205, 210, 224);
+            sub.AutoSize = true;
+            sub.Location = new Point(32, 68);
+            header.Controls.Add(sub);
+
+            Panel body = new Panel();
+            body.Dock = DockStyle.Fill;
+            body.BackColor = Color.FromArgb(4, 6, 10);
+            body.Padding = new Padding(28, 24, 28, 24);
+            Controls.Add(body);
+
+            AddStep(body, "1", "Load Save", "Use Load Save for the normal Undertale folder. Use Find Folder only if your save is somewhere else.", Color.FromArgb(54, 151, 255), 28, 24);
+            AddStep(body, "2", "Pick What You Want", "Type LEVEL, HP, EXP, GOLD, or DMG numbers. Use route buttons and presets for fast changes.", Color.FromArgb(85, 220, 155), 28, 118);
+            AddStep(body, "3", "Write Save", "Nothing touches the save until Write Save. The app makes a backup first, then commits your values.", Color.FromArgb(255, 63, 92), 28, 212);
+            AddStep(body, "4", "Use Advanced Tools", "Inventory Forge, Chaos Console, Live Hook, and GameJolt Mod Hub are there when you want more control.", Color.FromArgb(255, 195, 70), 28, 306);
+
+            Panel tip = MakeTipPanel();
+            tip.Location = new Point(420, 24);
+            body.Controls.Add(tip);
+
+            Button done = MakeGuideButton("Done", Color.FromArgb(85, 220, 155));
+            done.Location = new Point(636, 408);
+            done.Click += delegate { Close(); };
+            body.Controls.Add(done);
+        }
+
+        private void AddStep(Control parent, string number, string title, string text, Color accent, int x, int y)
+        {
+            Panel card = new Panel();
+            card.Location = new Point(x, y);
+            card.Size = new Size(360, 76);
+            card.BackColor = Color.FromArgb(12, 17, 28);
+            card.Paint += delegate(object sender, PaintEventArgs e)
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, card.Width - 1, card.Height - 1);
+                using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(21, 26, 38), Color.FromArgb(7, 9, 15), 90f))
+                {
+                    e.Graphics.FillRectangle(b, r);
+                }
+                using (SolidBrush wash = new SolidBrush(Color.FromArgb(16, accent)))
+                {
+                    e.Graphics.FillRectangle(wash, 0, 0, card.Width, card.Height);
+                }
+                using (Pen line = new Pen(accent, 2f))
+                {
+                    e.Graphics.DrawLine(line, 0, 0, card.Width, 0);
+                }
+                using (Pen border = new Pen(Color.FromArgb(58, 66, 82), 1f))
+                {
+                    e.Graphics.DrawRectangle(border, r);
+                }
+            };
+            parent.Controls.Add(card);
+
+            Label badge = new Label();
+            badge.Text = number;
+            badge.Font = new Font("Segoe UI Semibold", 18f, FontStyle.Bold);
+            badge.ForeColor = accent;
+            badge.TextAlign = ContentAlignment.MiddleCenter;
+            badge.Location = new Point(12, 14);
+            badge.Size = new Size(44, 44);
+            card.Controls.Add(badge);
+
+            Label heading = new Label();
+            heading.Text = title;
+            heading.Font = new Font("Segoe UI Semibold", 11f, FontStyle.Bold);
+            heading.ForeColor = Color.White;
+            heading.AutoSize = true;
+            heading.Location = new Point(66, 12);
+            card.Controls.Add(heading);
+
+            Label copy = new Label();
+            copy.Text = text;
+            copy.Font = new Font("Segoe UI", 8.6f);
+            copy.ForeColor = Color.FromArgb(180, 186, 202);
+            copy.Location = new Point(68, 36);
+            copy.Size = new Size(270, 34);
+            card.Controls.Add(copy);
+        }
+
+        private Panel MakeTipPanel()
+        {
+            Panel panel = new Panel();
+            panel.Size = new Size(330, 360);
+            panel.BackColor = Color.FromArgb(10, 13, 22);
+            panel.Paint += delegate(object sender, PaintEventArgs e)
+            {
+                Rectangle r = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
+                using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(18, 23, 36), Color.FromArgb(7, 9, 15), 90f))
+                {
+                    e.Graphics.FillRectangle(b, r);
+                }
+                using (Pen border = new Pen(Color.FromArgb(72, 85, 220, 155), 1f))
+                {
+                    e.Graphics.DrawRectangle(border, r);
+                }
+            };
+
+            Label title = new Label();
+            title.Text = "Player Tips";
+            title.Font = new Font("Segoe UI Semibold", 14f, FontStyle.Bold);
+            title.ForeColor = Color.White;
+            title.Location = new Point(18, 18);
+            title.AutoSize = true;
+            panel.Controls.Add(title);
+
+            Label copy = new Label();
+            copy.Text =
+                "- Safe Start makes a clean LV1 save in memory.\r\n\r\n" +
+                "- Make Me OP maxes the big player boxes.\r\n\r\n" +
+                "- Sync LV Stats fills normal HP, EXP, and DMG for the level.\r\n\r\n" +
+                "- Mirror file9 is recommended for Undertale saves.\r\n\r\n" +
+                "- Advanced tools are optional. You can ignore them and still use the app.";
+            copy.Font = new Font("Segoe UI", 9.2f);
+            copy.ForeColor = Color.FromArgb(210, 216, 230);
+            copy.Location = new Point(20, 60);
+            copy.Size = new Size(290, 260);
+            panel.Controls.Add(copy);
+
+            return panel;
+        }
+
+        private Button MakeGuideButton(string text, Color accent)
+        {
+            Button b = new Button();
+            b.Text = text;
+            b.Width = 114;
+            b.Height = 40;
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderColor = accent;
+            b.FlatAppearance.BorderSize = 2;
+            b.BackColor = Color.FromArgb(17, 19, 28);
+            b.ForeColor = Color.White;
+            b.Font = new Font("Segoe UI Semibold", 10f, FontStyle.Bold);
+            b.Cursor = Cursors.Hand;
+            b.MouseEnter += delegate
+            {
+                b.BackColor = Color.FromArgb(Math.Min(255, accent.R / 3 + 28), Math.Min(255, accent.G / 3 + 28), Math.Min(255, accent.B / 3 + 34));
+            };
+            b.MouseLeave += delegate
+            {
+                b.BackColor = Color.FromArgb(17, 19, 28);
+            };
+            return b;
         }
     }
 

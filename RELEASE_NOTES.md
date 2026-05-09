@@ -1,5 +1,15 @@
 # Release Notes
 
+## WASD Movement Build
+
+### New
+
+- Added a `WASD Move` toggle in the Control Center
+- `codex_live.ini` now writes `[Controls] wasd=1` when WASD movement is enabled
+- Live Hook upgraded to V3 and maps W/A/S/D to Up/Left/Down/Right inside Undertale
+- WASD support uses Undertale's normal arrow-key paths, so it applies to overworld movement and battle soul movement after reinstalling the hook
+- Build manifest bumped to `202605091805`
+
 ## Clean Feature Tabs Build
 
 ### New

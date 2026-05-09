@@ -8,9 +8,10 @@ GameJolt Mod Hub loads the Undertale tag from GameJolt, opens the selected proje
 GitHub Auto-Update checks update.ini every time the EXE starts. Point it at your GitHub release asset and the app will download a changed EXE, close, replace itself, and restart. The previous EXE is kept as UndertaleSaveStudioPro.exe.previous.
 LV, HP, DMG, EXP, and gold controls are uncapped up to 999,999,999. The EXE has an Uncap Power button for setting all five instantly.
 The main window now shows the big number boxes for LEVEL, HP, EXP, GOLD, and DMG. Other features are exposed as large buttons, on/off toggle buttons, or the searchable/paged Feature Tools window.
+WASD Move toggle: writes a controls setting to codex_live.ini. Install or reinstall Live Hook V3, then restart Undertale from the patched folder to use W/A/S/D for normal rooms and battle soul movement.
 Latest visual pass: professional Feature Tools cards, curated category tabs, no generated 100K placeholder lists, and cleaner control-center layout.
 Watch Game toggle: waits for an Undertale process/window, writes the edited save once with a backup, then refreshes the save file while the game is running. This is not process injection; if Undertale already cached old values, reload/restart the save screen.
-Live Hook V2: this is the safe replacement for raw process injection. Click Install Live Hook, choose the game's data.win, and the app patches a tiny UndertaleModTool hook into the game so Undertale reads %LOCALAPPDATA%\UNDERTALE\codex_live.ini while it is running. Write Save updates that live config, and Watch Game keeps refreshing it. The hook forces DMG during live polling, battle startup, battle stat reset, and attack calculation. A data.win.codex-backup-yyyyMMdd-HHmmss backup is created beside the chosen data.win before patching.
+Live Hook V3: this is the safe replacement for raw process injection. Click Install Live Hook, choose the game's data.win, and the app patches a tiny UndertaleModTool hook into the game so Undertale reads %LOCALAPPDATA%\UNDERTALE\codex_live.ini while it is running. Write Save updates that live config, Watch Game keeps refreshing it, and WASD Move maps W/A/S/D to arrow movement. The hook forces DMG during live polling, battle startup, battle stat reset, and attack calculation. A data.win.codex-backup-yyyyMMdd-HHmmss backup is created beside the chosen data.win before patching.
 
 Run the native EXE:
 1. Double-click UndertaleSaveStudioPro.exe
@@ -31,7 +32,7 @@ undertale-fun-route-editor\backups
 Route notes:
 - FUN is stored in undertale.ini.
 - LV is file0 line 2.
-- DMG is based on file0 attack power lines 5 and 6, and Live Hook V2 forces battle attack power when installed.
+- DMG is based on file0 attack power lines 5 and 6, and Live Hook V3 forces battle attack power when installed.
 - EXP is file0 line 10.
 - Kills is file0 line 12.
 - The murder-route override is global flag 26, which is file0 line 57.

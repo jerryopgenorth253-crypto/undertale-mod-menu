@@ -20,6 +20,7 @@ Features:
 - Feature tabs are now curated sections instead of generated 100K placeholder lists
 - Feature buttons are professional cards with unique names and direct descriptions
 - Edit LEVEL, HP, EXP, GOLD, and DMG with uncapped number boxes
+- Toggle WASD movement for normal rooms and battle soul movement with Live Hook V3
 - Change FUN, route state, kills, plot, room, and raw file0 lines
 - Use Inventory Forge for regular item IDs and experimental raw mod-token IDs
 - Browse Undertale-tagged GameJolt projects inside the GameJolt Mod Hub
@@ -52,10 +53,12 @@ Clean Feature Tools Build
 
 ## Version / Build
 
-202605091735
+202605091805
 
 ## Release Notes
 
+- Added WASD Move toggle for overworld and battle movement
+- Upgraded Live Hook to V3 with W/A/S/D to arrow-key mapping
 - Removed the visible Chaos tab/buttons from the main player UI
 - Replaced generated 100K Feature tabs with curated sections
 - Added professional feature cards with unique names and descriptions
@@ -80,4 +83,4 @@ UndertaleSaveStudioPro.exe
 
 ## Upload ZIP
 
-GameJolt_Undertale_Mod_Menu_CleanTools_202605091735.zip
+GameJolt_Undertale_Mod_Menu_WASD_202605091805.zip

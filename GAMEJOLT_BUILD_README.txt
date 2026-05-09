@@ -6,6 +6,7 @@ Run:
 
 Included:
 - UndertaleSaveStudioPro.exe
+- InstallCodexLiveHook.csx
 - update.ini
 - update-manifest.ini
 - README.md
@@ -18,6 +19,7 @@ Notes:
 - This package does not include downloaded GameJolt mod files.
 - Use it with your own legitimate copy of Undertale.
 - The auto-updater checks the configured GitHub repo for newer builds.
+- This build adds WASD Move. Reinstall Live Hook V3 to use W/A/S/D in normal rooms and battles.
 - This build removes the visible Chaos tab/buttons from the main player UI.
 - Feature tabs are curated, professional sections instead of generated 100K placeholder lists.
 - Every Feature card now has a unique name and a direct description.

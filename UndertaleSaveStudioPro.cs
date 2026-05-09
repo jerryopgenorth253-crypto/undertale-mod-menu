@@ -48,7 +48,7 @@ namespace UndertaleSaveStudioPro
     internal static class SelfUpdater
     {
         private const string ConfigFileName = "update.ini";
-        private const long CurrentBuild = 202605091735L;
+        private const long CurrentBuild = 202605091805L;
 
         public static void CheckForUpdates(Form owner, Action<string> report, bool userRequested)
         {
@@ -568,6 +568,7 @@ namespace UndertaleSaveStudioPro
         public List<string> Lines;
         public string NewLine;
         public string LoadedSource;
+        public bool WasdMovement;
 
         public SaveModel()
         {
@@ -576,6 +577,7 @@ namespace UndertaleSaveStudioPro
             Lines = null;
             NewLine = "\r\n";
             LoadedSource = "";
+            WasdMovement = false;
         }
 
         public bool HasFile0
@@ -610,6 +612,59 @@ namespace UndertaleSaveStudioPro
                 Lines = null;
                 LoadedSource = "";
             }
+            LoadLiveConfigOptions();
+        }
+
+        private void LoadLiveConfigOptions()
+        {
+            string live = Path.Combine(SaveDir, "codex_live.ini");
+            if (!File.Exists(live))
+            {
+                return;
+            }
+            string section = "";
+            foreach (string raw in File.ReadAllLines(live))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith(";"))
+                {
+                    continue;
+                }
+                if (line.StartsWith("[") && line.EndsWith("]"))
+                {
+                    section = line.Substring(1, line.Length - 2).Trim();
+                    continue;
+                }
+                int eq = line.IndexOf('=');
+                if (eq <= 0)
+                {
+                    continue;
+                }
+                string key = line.Substring(0, eq).Trim();
+                string value = line.Substring(eq + 1).Trim().Trim('"');
+                if (section.Equals("Controls", StringComparison.OrdinalIgnoreCase) && key.Equals("wasd", StringComparison.OrdinalIgnoreCase))
+                {
+                    WasdMovement = ParseSwitch(value, WasdMovement);
+                }
+            }
+        }
+
+        private static bool ParseSwitch(string value, bool fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return fallback;
+            }
+            value = value.Trim();
+            if (value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value.Equals("on", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (value == "0" || value.Equals("false", StringComparison.OrdinalIgnoreCase) || value.Equals("off", StringComparison.OrdinalIgnoreCase) || value.Equals("no", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            return fallback;
         }
 
         public void LoadFile0Text(string text, string source)
@@ -893,6 +948,8 @@ namespace UndertaleSaveStudioPro
             {
                 lines.Add("slot" + i.ToString() + "=" + items[i].ToString());
             }
+            lines.Add("[Controls]");
+            lines.Add("wasd=" + (WasdMovement ? "1" : "0"));
             File.WriteAllLines(Path.Combine(SaveDir, "codex_live.ini"), lines.ToArray());
         }
 
@@ -1246,6 +1303,7 @@ namespace UndertaleSaveStudioPro
         private CheckBox genocideToggle;
         private CheckBox customToggle;
         private CheckBox watchGameToggle;
+        private CheckBox wasdToggle;
         private readonly ToolTip tips = new ToolTip();
         private readonly Timer gameWatchTimer = new Timer();
         private bool gameWasRunning;
@@ -1440,6 +1498,12 @@ namespace UndertaleSaveStudioPro
             neutralToggle.Location = new Point(tx + 170, ty);
             neutralToggle.CheckedChanged += delegate { RouteToggleChanged(1, neutralToggle); };
             body.Controls.Add(neutralToggle);
+
+            wasdToggle = MakeToggle("WASD Move", model.WasdMovement, Color.FromArgb(0, 205, 255));
+            wasdToggle.Location = new Point(tx + 340, ty);
+            wasdToggle.CheckedChanged += delegate { WasdToggleChanged(); };
+            body.Controls.Add(wasdToggle);
+            tips.SetToolTip(wasdToggle, "When ON, the Live Hook makes W/A/S/D act like Up/Left/Down/Right in overworld and battle.");
 
             ty += 62;
             genocideToggle = MakeToggle("Genocide", false, Color.FromArgb(255, 63, 92));
@@ -2069,6 +2133,27 @@ namespace UndertaleSaveStudioPro
             }
         }
 
+        private void WasdToggleChanged()
+        {
+            if (wasdToggle == null)
+            {
+                return;
+            }
+            model.WasdMovement = wasdToggle.Checked;
+            try
+            {
+                PushFromUi();
+                model.WriteLiveConfig(true);
+                statusLabel.Text = wasdToggle.Checked
+                    ? "WASD movement is ON in codex_live.ini. Install or reinstall Live Hook V3, then restart Undertale from the patched folder."
+                    : "WASD movement is OFF in codex_live.ini. Restart Undertale or wait for the live hook to refresh.";
+            }
+            catch (Exception ex)
+            {
+                statusLabel.Text = "Could not update WASD setting: " + ex.Message;
+            }
+        }
+
         private void WatchGameTick()
         {
             if (watchGameToggle == null || !watchGameToggle.Checked)
@@ -2342,6 +2427,10 @@ namespace UndertaleSaveStudioPro
         private void PullToUi()
         {
             funBox.Value = model.Fun();
+            if (wasdToggle != null)
+            {
+                wasdToggle.Checked = model.WasdMovement;
+            }
             if (!model.HasFile0)
             {
                 nameBox.Text = "";
@@ -2378,6 +2467,10 @@ namespace UndertaleSaveStudioPro
 
         private void PushFromUi()
         {
+            if (wasdToggle != null)
+            {
+                model.WasdMovement = wasdToggle.Checked;
+            }
             model.SetFun((int)funBox.Value);
             if (!model.HasFile0)
             {
@@ -2610,11 +2703,7 @@ namespace UndertaleSaveStudioPro
         private void InstallLiveHookMod()
         {
             string cli = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "UTMT_CLI_v0.8.4.1-Windows", "UndertaleModCli.exe");
-            string script = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InstallCodexLiveHook.csx");
-            if (!File.Exists(script))
-            {
-                script = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "undertale-fun-route-editor", "InstallCodexLiveHook.csx");
-            }
+            string script = ResolveLiveHookScript();
             if (!File.Exists(cli))
             {
                 ProDialog.ShowInfo(this, "HOOK INSTALLER", "Could not find UndertaleModCli.exe at:\r\n" + cli, Color.FromArgb(255, 195, 70));
@@ -2636,7 +2725,7 @@ namespace UndertaleSaveStudioPro
                     return;
                 }
 
-                if (!ProDialog.ShowConfirm(this, "INSTALL LIVE HOOK", "Patch this data.win so Undertale reads codex_live.ini while running?\r\n\r\nA backup of the original data.win will be created first.", Color.FromArgb(255, 195, 70)))
+                if (!ProDialog.ShowConfirm(this, "INSTALL LIVE HOOK V3", "Patch this data.win so Undertale reads codex_live.ini while running and can map movement to WASD?\r\n\r\nA backup of the original data.win will be created first.", Color.FromArgb(255, 195, 70)))
                 {
                     return;
                 }
@@ -2678,13 +2767,45 @@ namespace UndertaleSaveStudioPro
                     File.Delete(temp);
                     PushFromUi();
                     model.WriteLiveConfig(true);
-                    ProDialog.ShowInfo(this, "LIVE HOOK V2 INSTALLED", "Patched data.win with the stronger DMG hook and wrote codex_live.ini.\r\n\r\nBackup:\r\n" + backup + "\r\n\r\nClose Undertale, then launch it from this patched game folder.", Color.FromArgb(85, 220, 155));
+                    ProDialog.ShowInfo(this, "LIVE HOOK V3 INSTALLED", "Patched data.win with the DMG hook, live save hook, and WASD movement support.\r\n\r\nBackup:\r\n" + backup + "\r\n\r\nClose Undertale, then launch it from this patched game folder.", Color.FromArgb(85, 220, 155));
                 }
                 catch (Exception ex)
                 {
                     ProDialog.ShowInfo(this, "HOOK FAILED", ex.Message, Color.FromArgb(255, 195, 70));
                 }
             }
+        }
+
+        private string ResolveLiveHookScript()
+        {
+            string tempScript = Path.Combine(Path.GetTempPath(), "InstallCodexLiveHook.latest.csx");
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    client.Headers.Add("User-Agent", "UndertaleSaveStudioPro");
+                    client.DownloadFile("https://raw.githubusercontent.com/jerryopgenorth253-crypto/undertale-mod-menu/main/InstallCodexLiveHook.csx", tempScript);
+                }
+                if (File.Exists(tempScript) && new FileInfo(tempScript).Length > 1000)
+                {
+                    return tempScript;
+                }
+            }
+            catch
+            {
+            }
+
+            string script = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InstallCodexLiveHook.csx");
+            if (File.Exists(script))
+            {
+                return script;
+            }
+            script = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "undertale-fun-route-editor", "InstallCodexLiveHook.csx");
+            if (File.Exists(script))
+            {
+                return script;
+            }
+            return tempScript;
         }
 
         private void RandomFun()

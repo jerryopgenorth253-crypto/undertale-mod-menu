@@ -30,12 +30,14 @@ importGroup.QueueAppend(createCode, @"
 codex_live_tick = 0;
 codex_live_room_last = -1;
 global.codex_live_damage = -1;
+global.codex_wasd = 0;
 ");
 
 if (gameStartCode is not null)
 {
     importGroup.QueueAppend(gameStartCode, @"
 global.codex_live_damage = -1;
+global.codex_wasd = 0;
 ");
 }
 
@@ -57,6 +59,8 @@ if (codex_live_tick >= 20)
             var codex_damage = ini_read_real(""Player"", ""damage"", -1);
             var codex_room = ini_read_real(""Player"", ""room"", -1);
             var codex_murder = ini_read_real(""Player"", ""murder"", -1);
+            var codex_wasd = ini_read_real(""Controls"", ""wasd"", 0);
+            global.codex_wasd = codex_wasd;
             if (codex_lv >= 0) global.lv = codex_lv;
             if (codex_hp >= 0)
             {
@@ -88,6 +92,28 @@ if (codex_live_tick >= 20)
             }
         }
         ossafe_ini_close();
+    }
+}
+if (variable_global_exists(""codex_wasd"") && global.codex_wasd == 1)
+{
+    if (global.debug == 0)
+    {
+        if keyboard_check(ord(""W""))
+            keyboard_key_press(vk_up)
+        if keyboard_check_released(ord(""W""))
+            keyboard_key_release(vk_up)
+        if keyboard_check(ord(""A""))
+            keyboard_key_press(vk_left)
+        if keyboard_check_released(ord(""A""))
+            keyboard_key_release(vk_left)
+        if keyboard_check(ord(""S""))
+            keyboard_key_press(vk_down)
+        if keyboard_check_released(ord(""S""))
+            keyboard_key_release(vk_down)
+        if keyboard_check(ord(""D""))
+            keyboard_key_press(vk_right)
+        if keyboard_check_released(ord(""D""))
+            keyboard_key_release(vk_right)
     }
 }
 ");
@@ -139,4 +165,4 @@ if (variable_global_exists(""codex_live_damage"") && global.codex_live_damage >=
 ");
 
 importGroup.Import();
-ScriptMessage("Codex Live Hook v2 installed. Undertale will read codex_live.ini and force DMG during battle startup and attack calculation.");
+ScriptMessage("Codex Live Hook v3 installed. Undertale will read codex_live.ini, force DMG during battle startup/attack calculation, and map WASD to movement when enabled.");

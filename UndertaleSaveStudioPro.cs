@@ -48,7 +48,7 @@ namespace UndertaleSaveStudioPro
     internal static class SelfUpdater
     {
         private const string ConfigFileName = "update.ini";
-        private const long CurrentBuild = 202605091700L;
+        private const long CurrentBuild = 202605091735L;
 
         public static void CheckForUpdates(Form owner, Action<string> report, bool userRequested)
         {
@@ -1258,7 +1258,7 @@ namespace UndertaleSaveStudioPro
 
         public MainForm()
         {
-            Text = "Undertale Mod Menu - Feature Vault Neon";
+            Text = "Undertale Mod Menu - Clean Feature Tools";
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(1440, 860);
             Size = new Size(1540, 900);
@@ -1271,7 +1271,7 @@ namespace UndertaleSaveStudioPro
             LoadLive();
             Shown += delegate
             {
-                ProDialog.ShowInfo(this, "FEATURE VAULT MODE", "Quick path:\r\n\r\n1. Load your save.\r\n2. Pick a preset or type numbers.\r\n3. Press Write Save.\r\n\r\nBackups are made before live writes.", Color.FromArgb(54, 151, 255));
+                ProDialog.ShowInfo(this, "CLEAN FEATURE TOOLS", "Quick path:\r\n\r\n1. Load your save.\r\n2. Pick a named tool or type numbers.\r\n3. Press Write Save.\r\n\r\nBackups are made before live writes.", Color.FromArgb(54, 151, 255));
                 SelfUpdater.CheckForUpdates(this, delegate(string text) { statusLabel.Text = text; }, false);
             };
         }
@@ -1305,7 +1305,7 @@ namespace UndertaleSaveStudioPro
             header.Controls.Add(badge);
 
             Label featureBadge = new Label();
-            featureBadge.Text = "100K+ FEATURES";
+            featureBadge.Text = "CLEAN FEATURES";
             featureBadge.Font = new Font("Segoe UI Semibold", 8f, FontStyle.Bold);
             featureBadge.ForeColor = Color.FromArgb(170, 230, 255);
             featureBadge.BackColor = Color.FromArgb(8, 24, 38);
@@ -1453,11 +1453,11 @@ namespace UndertaleSaveStudioPro
             body.Controls.Add(customToggle);
 
             ty += 78;
-            Button vault = MakeWideButton("Feature Vault 100K+", delegate { OpenFeatureVault(); }, Color.FromArgb(54, 151, 255));
+            Button vault = MakeWideButton("Features", delegate { OpenFeatureVault(); }, Color.FromArgb(54, 151, 255));
             vault.Width = 500;
             vault.Location = new Point(tx, ty);
             body.Controls.Add(vault);
-            tips.SetToolTip(vault, "Search big one-click presets for routes, flags, stats, rooms, and inventory.");
+            tips.SetToolTip(vault, "Open clean one-click tools for stats, routes, rooms, flags, FUN, and inventory.");
 
             ty += 58;
             Button modHub = MakeWideButton("GameJolt Mod Hub", delegate { OpenGameJoltModHub(); }, Color.FromArgb(85, 220, 155));
@@ -1467,15 +1467,8 @@ namespace UndertaleSaveStudioPro
             tips.SetToolTip(modHub, "Browse GameJolt Undertale projects and install downloaded ZIP/folder mods safely.");
 
             ty += 58;
-            Button chaos = MakeWideButton("Chaos Console", delegate { OpenChaosConsole(); }, Color.FromArgb(255, 63, 92));
-            chaos.Width = 330;
-            chaos.Location = new Point(tx, ty);
-            body.Controls.Add(chaos);
-            tips.SetToolTip(chaos, "Randomizers and advanced save experiments.");
-
-            ty += 58;
             inventoryButton = MakeWideButton("Inventory Forge", delegate { OpenInventoryForge(); }, Color.FromArgb(255, 195, 70));
-            inventoryButton.Width = 330;
+            inventoryButton.Width = 500;
             inventoryButton.Location = new Point(tx, ty);
             body.Controls.Add(inventoryButton);
             tips.SetToolTip(inventoryButton, "Give yourself regular Undertale items or raw mod-token IDs.");
@@ -1617,7 +1610,7 @@ namespace UndertaleSaveStudioPro
             panel.Controls.Add(vault);
 
             Label mod = new Label();
-            mod.Text = "100K+ MOD MENU";
+            mod.Text = "PRO MOD MENU";
             mod.Font = new Font("Arial Black", 24f, FontStyle.Bold);
             mod.ForeColor = Color.FromArgb(255, 214, 0);
             mod.BackColor = Color.Transparent;
@@ -1626,7 +1619,7 @@ namespace UndertaleSaveStudioPro
             panel.Controls.Add(mod);
 
             Label hint = new Label();
-            hint.Text = "Uncapped stats, routes, hooks, inventory, chaos";
+            hint.Text = "Uncapped stats, routes, hooks, inventory, features";
             hint.Font = new Font("Segoe UI Semibold", 9f, FontStyle.Bold);
             hint.ForeColor = Color.FromArgb(185, 220, 255);
             hint.BackColor = Color.Transparent;
@@ -1655,10 +1648,10 @@ namespace UndertaleSaveStudioPro
                 }
             };
 
-            Button chaos = MakeWideButton("CHAOS", delegate { OpenChaosConsole(); }, Color.FromArgb(255, 63, 92));
-            chaos.Size = new Size(118, 48);
-            chaos.Location = new Point(12, 13);
-            panel.Controls.Add(chaos);
+            Button features = MakeWideButton("FEATURES", delegate { OpenFeatureVault(); }, Color.FromArgb(54, 151, 255));
+            features.Size = new Size(118, 48);
+            features.Location = new Point(12, 13);
+            panel.Controls.Add(features);
 
             Button forge = MakeWideButton("FORGE", delegate { OpenInventoryForge(); }, Color.FromArgb(255, 195, 70));
             forge.Size = new Size(118, 48);
@@ -2500,7 +2493,7 @@ namespace UndertaleSaveStudioPro
         {
             if (!model.HasFile0)
             {
-                if (!ProDialog.ShowConfirm(this, "CREATE FEATURE FILE0", "No file0/file9 is loaded yet.\r\n\r\nCreate a fresh player save shell so Feature Vault has something to edit?", Color.FromArgb(54, 151, 255)))
+                if (!ProDialog.ShowConfirm(this, "CREATE FEATURE FILE0", "No file0/file9 is loaded yet.\r\n\r\nCreate a fresh player save shell so Feature Tools has something to edit?", Color.FromArgb(54, 151, 255)))
                 {
                     return;
                 }
@@ -2515,11 +2508,11 @@ namespace UndertaleSaveStudioPro
                 PullToUi();
                 if (f.AppliedCount > 0)
                 {
-                    statusLabel.Text = "Feature Vault applied " + f.AppliedCount.ToString() + " feature" + (f.AppliedCount == 1 ? "" : "s") + " in memory. Press Write Save to commit.";
+                    statusLabel.Text = "Feature Tools applied " + f.AppliedCount.ToString() + " feature" + (f.AppliedCount == 1 ? "" : "s") + " in memory. Press Write Save to commit.";
                 }
                 else
                 {
-                    statusLabel.Text = "Feature Vault closed without changes.";
+                    statusLabel.Text = "Feature Tools closed without changes.";
                 }
             }
         }
@@ -2771,7 +2764,7 @@ namespace UndertaleSaveStudioPro
             AddStep(body, "1", "Load Save", "Use Load Save for the normal Undertale folder. Use Find Folder only if your save is somewhere else.", Color.FromArgb(54, 151, 255), 28, 24);
             AddStep(body, "2", "Pick What You Want", "Type LEVEL, HP, EXP, GOLD, or DMG numbers. Use route buttons and presets for fast changes.", Color.FromArgb(85, 220, 155), 28, 118);
             AddStep(body, "3", "Write Save", "Nothing touches the save until Write Save. The app makes a backup first, then commits your values.", Color.FromArgb(255, 63, 92), 28, 212);
-            AddStep(body, "4", "Use Advanced Tools", "Inventory Forge, Chaos Console, Live Hook, and GameJolt Mod Hub are there when you want more control.", Color.FromArgb(255, 195, 70), 28, 306);
+            AddStep(body, "4", "Use Advanced Tools", "Inventory Forge, Live Hook, and GameJolt Mod Hub are there when you want more control.", Color.FromArgb(255, 195, 70), 28, 306);
 
             Panel tip = MakeTipPanel();
             tip.Location = new Point(420, 24);
@@ -3649,7 +3642,7 @@ namespace UndertaleSaveStudioPro
         private int appliedCount;
         private int pageIndex;
         private const int PowerMax = 999999999;
-        private const int PageSize = 96;
+        private const int PageSize = 12;
 
         public int AppliedCount
         {
@@ -3662,7 +3655,7 @@ namespace UndertaleSaveStudioPro
             allRooms = RoomCatalog.Load();
             playerRooms = RoomCatalog.PlayerRooms();
             features = BuildFeatures();
-            Text = "Feature Vault 100K+";
+            Text = "Undertale Feature Tools";
             StartPosition = FormStartPosition.CenterParent;
             MinimumSize = new Size(1220, 720);
             Size = new Size(1280, 780);
@@ -3681,14 +3674,14 @@ namespace UndertaleSaveStudioPro
             Controls.Add(header);
 
             Label title = new Label();
-            title.Text = "FEATURE VAULT";
+            title.Text = "FEATURE TOOLS";
             title.Font = new Font("Segoe UI Semibold", 24f, FontStyle.Bold);
             title.ForeColor = Color.White;
             title.Location = new Point(28, 16);
             title.AutoSize = true;
             header.Controls.Add(title);
 
-            countLabel.Text = features.Count.ToString() + " loaded tools";
+            countLabel.Text = features.Count.ToString() + " clean tools";
             countLabel.Font = new Font("Segoe UI Semibold", 9f, FontStyle.Bold);
             countLabel.ForeColor = Color.FromArgb(170, 230, 255);
             countLabel.BackColor = Color.FromArgb(8, 24, 38);
@@ -3698,7 +3691,7 @@ namespace UndertaleSaveStudioPro
             header.Controls.Add(countLabel);
 
             Label subtitle = new Label();
-            subtitle.Text = "One-click tools with plain labels: stats, routes, flags, room teleports, items, battles, and chaos runs.";
+            subtitle.Text = "Clean one-click tools with plain names and short descriptions. Chaos/random bulk has been removed.";
             subtitle.ForeColor = Color.FromArgb(224, 226, 235);
             subtitle.Location = new Point(32, 68);
             subtitle.AutoSize = true;
@@ -3721,13 +3714,21 @@ namespace UndertaleSaveStudioPro
             categoryList.ForeColor = Color.White;
             categoryList.BorderStyle = BorderStyle.FixedSingle;
             categoryList.IntegralHeight = false;
+            categoryList.DrawMode = DrawMode.OwnerDrawFixed;
+            categoryList.ItemHeight = 34;
+            categoryList.Font = new Font("Segoe UI Semibold", 9.5f, FontStyle.Bold);
+            categoryList.DrawItem += DrawCategoryItem;
             categoryList.SelectedIndexChanged += delegate { pageIndex = 0; RefreshFeatureButtons(); };
             sidebar.Controls.Add(categoryList);
 
-            categoryList.Items.Add("All Features");
-            foreach (string category in features.Select(delegate(FeatureDef f) { return f.Category; }).Distinct().OrderBy(delegate(string s) { return s; }))
+            categoryList.Items.Add("All Tools");
+            HashSet<string> addedCategories = new HashSet<string>();
+            foreach (FeatureDef feature in features)
             {
-                categoryList.Items.Add(category);
+                if (addedCategories.Add(feature.Category))
+                {
+                    categoryList.Items.Add(feature.Category);
+                }
             }
             categoryList.SelectedIndex = 0;
 
@@ -3797,11 +3798,16 @@ namespace UndertaleSaveStudioPro
             };
             Controls.Add(nextPage);
 
-            Button randomVisible = MakeVaultButton("Random Visible", Color.FromArgb(255, 195, 70));
-            randomVisible.Location = new Point(884, 664);
-            randomVisible.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
-            randomVisible.Click += delegate { ApplyRandomVisible(); };
-            Controls.Add(randomVisible);
+            Button clearSearch = MakeVaultButton("Clear Search", Color.FromArgb(255, 195, 70));
+            clearSearch.Location = new Point(884, 664);
+            clearSearch.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            clearSearch.Click += delegate
+            {
+                searchBox.Text = "";
+                categoryList.SelectedIndex = 0;
+                logLabel.Text = "Showing all clean feature tools.";
+            };
+            Controls.Add(clearSearch);
 
             Button liveConfig = MakeVaultButton("Live Config", Color.FromArgb(54, 151, 255));
             liveConfig.Location = new Point(1004, 664);
@@ -3866,6 +3872,35 @@ namespace UndertaleSaveStudioPro
             return b;
         }
 
+        private void DrawCategoryItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0)
+            {
+                return;
+            }
+
+            bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            string text = categoryList.Items[e.Index].ToString();
+            Color accent = CategoryAccent(text);
+            Rectangle row = e.Bounds;
+            using (SolidBrush bg = new SolidBrush(selected ? Color.FromArgb(22, 32, 52) : Color.FromArgb(8, 10, 17)))
+            {
+                e.Graphics.FillRectangle(bg, row);
+            }
+            using (SolidBrush strip = new SolidBrush(accent))
+            {
+                e.Graphics.FillRectangle(strip, new Rectangle(row.Left + 2, row.Top + 5, 4, row.Height - 10));
+            }
+            using (Pen border = new Pen(selected ? accent : Color.FromArgb(34, 40, 56), 1f))
+            {
+                e.Graphics.DrawRectangle(border, row.Left + 8, row.Top + 4, row.Width - 14, row.Height - 8);
+            }
+            using (SolidBrush brush = new SolidBrush(selected ? Color.White : Color.FromArgb(218, 224, 235)))
+            {
+                e.Graphics.DrawString(text, categoryList.Font, brush, row.Left + 18, row.Top + 8);
+            }
+        }
+
         private void RefreshFeatureButtons()
         {
             featureGrid.SuspendLayout();
@@ -3883,39 +3918,102 @@ namespace UndertaleSaveStudioPro
             for (int i = start; i < end; i++)
             {
                 FeatureDef def = visible[i];
-                Button b = MakeFeatureButton(def);
-                featureGrid.Controls.Add(b);
+                Control card = MakeFeatureButton(def);
+                featureGrid.Controls.Add(card);
             }
             featureGrid.ResumeLayout();
         }
 
-        private Button MakeFeatureButton(FeatureDef def)
+        private Control MakeFeatureButton(FeatureDef def)
         {
-            Button b = new Button();
-            b.Text = def.Name + "\r\n" + Shorten(def.Description, 54);
-            b.Tag = def;
-            b.Width = 252;
-            b.Height = 76;
-            b.Margin = new Padding(6);
-            b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderColor = def.Accent;
-            b.FlatAppearance.BorderSize = 2;
-            b.BackColor = Color.FromArgb(12, 17, 28);
-            b.ForeColor = Color.White;
-            b.Font = new Font("Segoe UI Semibold", 8.2f, FontStyle.Bold);
-            b.Cursor = Cursors.Hand;
-            b.TextAlign = ContentAlignment.MiddleCenter;
-            tips.SetToolTip(b, def.Category + ": " + def.Description);
-            b.MouseEnter += delegate
+            Panel card = new Panel();
+            card.Tag = def;
+            card.Width = 252;
+            card.Height = 106;
+            card.Margin = new Padding(7);
+            card.BackColor = Color.FromArgb(12, 17, 28);
+            card.Cursor = Cursors.Hand;
+            card.Paint += delegate(object sender, PaintEventArgs e)
             {
-                b.BackColor = Color.FromArgb(Math.Min(255, def.Accent.R / 3 + 28), Math.Min(255, def.Accent.G / 3 + 28), Math.Min(255, def.Accent.B / 3 + 34));
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, card.Width - 1, card.Height - 1);
+                using (LinearGradientBrush bg = new LinearGradientBrush(r, Color.FromArgb(16, 22, 36), Color.FromArgb(7, 9, 15), 90f))
+                {
+                    e.Graphics.FillRectangle(bg, r);
+                }
+                using (SolidBrush strip = new SolidBrush(Color.FromArgb(230, def.Accent)))
+                {
+                    e.Graphics.FillRectangle(strip, 0, 0, 5, card.Height);
+                }
+                using (Pen border = new Pen(Color.FromArgb(190, def.Accent), 2f))
+                {
+                    e.Graphics.DrawRectangle(border, r);
+                }
             };
-            b.MouseLeave += delegate
+
+            Label category = new Label();
+            category.Text = def.Category.ToUpperInvariant();
+            category.Font = new Font("Segoe UI Semibold", 7f, FontStyle.Bold);
+            category.ForeColor = Color.FromArgb(170, def.Accent);
+            category.BackColor = Color.Transparent;
+            category.Location = new Point(16, 10);
+            category.Size = new Size(220, 15);
+            card.Controls.Add(category);
+
+            Label title = new Label();
+            title.Text = def.Name;
+            title.Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold);
+            title.ForeColor = Color.White;
+            title.BackColor = Color.Transparent;
+            title.Location = new Point(16, 28);
+            title.Size = new Size(220, 26);
+            title.AutoEllipsis = true;
+            card.Controls.Add(title);
+
+            Label desc = new Label();
+            desc.Text = Shorten(def.Description, 82);
+            desc.Font = new Font("Segoe UI", 8.2f);
+            desc.ForeColor = Color.FromArgb(188, 196, 210);
+            desc.BackColor = Color.Transparent;
+            desc.Location = new Point(16, 56);
+            desc.Size = new Size(220, 38);
+            card.Controls.Add(desc);
+
+            tips.SetToolTip(card, def.Category + ": " + def.Description);
+            tips.SetToolTip(category, def.Category + ": " + def.Description);
+            tips.SetToolTip(title, def.Category + ": " + def.Description);
+            tips.SetToolTip(desc, def.Category + ": " + def.Description);
+            HookFeatureCardClick(card, def);
+            card.MouseEnter += delegate
             {
-                b.BackColor = Color.FromArgb(12, 17, 28);
+                card.BackColor = Color.FromArgb(Math.Min(255, def.Accent.R / 3 + 28), Math.Min(255, def.Accent.G / 3 + 28), Math.Min(255, def.Accent.B / 3 + 34));
             };
-            b.Click += delegate { ApplyFeature(def); };
-            return b;
+            card.MouseLeave += delegate
+            {
+                card.BackColor = Color.FromArgb(12, 17, 28);
+            };
+            return card;
+        }
+
+        private void HookFeatureCardClick(Control control, FeatureDef def)
+        {
+            control.Click += delegate { ApplyFeature(def); };
+            foreach (Control child in control.Controls)
+            {
+                HookFeatureCardClick(child, def);
+            }
+        }
+
+        private Color CategoryAccent(string category)
+        {
+            foreach (FeatureDef def in features)
+            {
+                if (def.Category == category)
+                {
+                    return def.Accent;
+                }
+            }
+            return Color.FromArgb(54, 151, 255);
         }
 
         private string Shorten(string value, int max)
@@ -3930,12 +4028,12 @@ namespace UndertaleSaveStudioPro
 
         private List<FeatureDef> FilteredFeatures()
         {
-            string category = categoryList.SelectedItem == null ? "All Features" : categoryList.SelectedItem.ToString();
+            string category = categoryList.SelectedItem == null ? "All Tools" : categoryList.SelectedItem.ToString();
             string search = (searchBox.Text ?? "").Trim().ToLowerInvariant();
             List<FeatureDef> visible = new List<FeatureDef>();
             foreach (FeatureDef def in features)
             {
-                if (category != "All Features" && def.Category != category)
+                if (category != "All Tools" && def.Category != category)
                 {
                     continue;
                 }
@@ -3950,18 +4048,6 @@ namespace UndertaleSaveStudioPro
                 visible.Add(def);
             }
             return visible;
-        }
-
-        private void ApplyRandomVisible()
-        {
-            List<FeatureDef> visible = FilteredFeatures();
-            if (visible.Count == 0)
-            {
-                logLabel.Text = "No visible features to randomize.";
-                return;
-            }
-            FeatureDef def = visible[random.Next(visible.Count)];
-            ApplyFeature(def);
         }
 
         private void ApplyFeature(FeatureDef def)
@@ -3982,15 +4068,12 @@ namespace UndertaleSaveStudioPro
         {
             List<FeatureDef> list = new List<FeatureDef>();
             AddStatPresets(list);
-            AddLevelLadder(list);
-            AddFunFeatures(list);
             AddRouteFeatures(list);
             AddRoomFeatures(list);
             AddInventoryFeatures(list);
-            AddBattleFlagFeatures(list);
+            AddFunFeatures(list);
+            AddStoryFlagFeatures(list);
             AddWorldFeatures(list);
-            AddChaosFeatures(list);
-            AddFeatureMatrix(list);
             return list;
         }
 
@@ -3999,9 +4082,9 @@ namespace UndertaleSaveStudioPro
             list.Add(new FeatureDef(category, name, description, accent, apply));
         }
 
-        private void AddStatFeature(List<FeatureDef> list, string name, int lv, int hp, int damage, int xp, int gold, int kills)
+        private void AddStatFeature(List<FeatureDef> list, string name, int lv, int hp, int damage, int xp, int gold, int kills, string description)
         {
-            AddFeature(list, "Power Presets", name, "Sets LV, HP, DMG, EXP, gold, and kills.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r)
+            AddFeature(list, "Player Presets", name, description, Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r)
             {
                 m.SetCoreStats(lv, hp, damage, xp, gold, kills);
             });
@@ -4009,441 +4092,213 @@ namespace UndertaleSaveStudioPro
 
         private void AddStatPresets(List<FeatureDef> list)
         {
-            AddStatFeature(list, "Fresh Start", 1, 20, 10, 0, 0, 0);
-            AddStatFeature(list, "Ruins Boost", 3, 28, 14, 30, 120, 2);
-            AddStatFeature(list, "Snowdin Ready", 7, 44, 22, 300, 450, 8);
-            AddStatFeature(list, "Waterfall Guard", 10, 56, 28, 1200, 900, 18);
-            AddStatFeature(list, "Hotland Core", 14, 72, 36, 5000, 1800, 34);
-            AddStatFeature(list, "MTT Prep", 17, 84, 42, 15000, 2800, 55);
-            AddStatFeature(list, "Judgment Hall", 20, 99, 30, 99999, 9999, 99);
-            AddStatFeature(list, "No Hit Challenge", 1, 1, 1, 0, 0, 0);
-            AddStatFeature(list, "Glass Cannon", 1, 20, 999999999, 0, 0, 0);
-            AddStatFeature(list, "Tank Build", 1, 999999999, 10, 0, 0, 0);
-            AddStatFeature(list, "Gold Farm", 8, 48, 24, 500, 999999999, 10);
-            AddStatFeature(list, "EXP Farm", 20, 99, 30, 999999999, 0, 100);
-            AddStatFeature(list, "Undyne Practice", 12, 64, 32, 2500, 1600, 25);
-            AddStatFeature(list, "Sans Practice", 20, 99, 999999999, 99999, 9999, 999);
-            AddStatFeature(list, "Omega Ready", 20, 999999999, 999999999, 999999999, 999999999, 999999);
-            AddStatFeature(list, "Pacifist Armor", 1, 999, 10, 0, 999, 0);
-            AddStatFeature(list, "Neutral Bruiser", 13, 68, 250, 3500, 2400, 31);
-            AddStatFeature(list, "Absolute Max", PowerMax, PowerMax, PowerMax, PowerMax, PowerMax, 999999);
-        }
-
-        private void AddLevelLadder(List<FeatureDef> list)
-        {
-            for (int lv = 1; lv <= 30; lv++)
-            {
-                int capture = lv;
-                AddFeature(list, "LV Ladder", "LV " + capture.ToString() + " Auto Stats", "Sets LV with matching HP, DMG, and EXP.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r)
-                {
-                    m.SetCoreStats(capture, LevelHp(capture), LevelDamage(capture), LevelXp(capture), m.GetNumber(SaveModel.Gold, 0), m.GetNumber(SaveModel.Kills, 0));
-                });
-            }
+            AddStatFeature(list, "Fresh Start", 1, 20, 10, 0, 0, 0, "Clean LV1 save stats with no EXP, kills, or gold.");
+            AddStatFeature(list, "Ruins Boost", 3, 28, 14, 30, 120, 2, "Early-game power bump for testing Ruins routes.");
+            AddStatFeature(list, "Snowdin Ready", 7, 44, 22, 300, 450, 8, "Sets mid-Snowdin stats with modest EXP and gold.");
+            AddStatFeature(list, "Waterfall Guard", 10, 56, 28, 1200, 900, 18, "Sets sturdy Waterfall stats for Undyne practice.");
+            AddStatFeature(list, "Hotland Core", 14, 72, 36, 5000, 1800, 34, "Prepares a strong Hotland and CORE save state.");
+            AddStatFeature(list, "MTT Prep", 17, 84, 42, 15000, 2800, 55, "Raises stats for late Mettaton and hotel testing.");
+            AddStatFeature(list, "Judgment Hall", 20, 99, 30, 99999, 9999, 99, "Classic LV20 late-game numbers for Sans corridor.");
+            AddStatFeature(list, "No Hit Challenge", 1, 1, 1, 0, 0, 0, "Drops HP and damage to 1 for challenge runs.");
+            AddStatFeature(list, "Glass Cannon", 1, 20, PowerMax, 0, 0, 0, "Keeps LV1 HP but maxes damage output.");
+            AddStatFeature(list, "Tank Build", 1, PowerMax, 10, 0, 0, 0, "Maxes HP while leaving damage normal.");
+            AddStatFeature(list, "Gold Farm", 8, 48, 24, 500, PowerMax, 10, "Maxes gold without maxing the whole save.");
+            AddStatFeature(list, "EXP Farm", 20, 99, 30, PowerMax, 0, 100, "Maxes EXP while keeping gold untouched.");
+            AddStatFeature(list, "Undyne Practice", 12, 64, 32, 2500, 1600, 25, "Balanced practice stats for Undyne fights.");
+            AddStatFeature(list, "Sans Practice", 20, 99, PowerMax, 99999, 9999, 999, "LV20 setup with max damage for Sans testing.");
+            AddStatFeature(list, "Omega Ready", 20, PowerMax, PowerMax, PowerMax, PowerMax, 999999, "Maxes main power values for extreme mod testing.");
+            AddStatFeature(list, "Absolute Max", PowerMax, PowerMax, PowerMax, PowerMax, PowerMax, 999999, "Pushes LV, HP, DMG, EXP, and gold to the cap.");
         }
 
         private void AddFunFeatures(List<FeatureDef> list)
         {
-            int[] values = new int[] { 1, 2, 13, 20, 30, 40, 45, 46, 47, 50, 56, 61, 62, 63, 65, 66, 70, 80, 81, 90, 91, 92, 99, 100 };
-            for (int i = 0; i < values.Length; i++)
+            AddFunFeature(list, "Normal Timeline", 1, "Sets FUN to a simple normal-play value.");
+            AddFunFeature(list, "Wrong Number Call", 2, "Sets FUN for the wrong-number phone event.");
+            AddFunFeature(list, "Alphys Call Variant", 13, "Sets FUN for an alternate Alphys call path.");
+            AddFunFeature(list, "Snowdin Oddity", 45, "Sets FUN near a Snowdin rare-event range.");
+            AddFunFeature(list, "Gaster Follower A", 61, "Sets FUN for the first Gaster follower range.");
+            AddFunFeature(list, "Gaster Follower B", 62, "Sets FUN for the second Gaster follower range.");
+            AddFunFeature(list, "Gaster Follower C", 63, "Sets FUN for the third Gaster follower range.");
+            AddFunFeature(list, "Sound Test", 65, "Sets FUN for the hidden sound-test room.");
+            AddFunFeature(list, "Mystery Man Door", 66, "Sets FUN for the Mystery Man doorway.");
+            AddFunFeature(list, "Clam Girl World", 81, "Sets FUN for the Clam Girl timeline.");
+            AddFunFeature(list, "Rare Ending Flavor", 90, "Sets FUN near late rare-dialogue ranges.");
+            AddFunFeature(list, "Maximum FUN", 100, "Sets FUN to the top allowed value.");
+        }
+
+        private void AddFunFeature(List<FeatureDef> list, string name, int fun, string description)
+        {
+            AddFeature(list, "FUN Events", name, description + " Value: " + fun.ToString() + ".", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
             {
-                int fun = values[i];
-                AddFeature(list, "FUN Timeline", "FUN " + fun.ToString(), "Sets undertale.ini FUN to " + fun.ToString() + ".", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
-                {
-                    m.SetFun(fun);
-                });
-            }
+                m.SetFun(fun);
+            });
         }
 
         private void AddRouteFeatures(List<FeatureDef> list)
         {
-            AddFeature(list, "Route Control", "Clean Pacifist", "Clears LV, EXP, kills, and murder flag.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r)
+            AddFeature(list, "Route Setup", "Clean Pacifist", "Clears LV, EXP, kills, and murder flag.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r)
             {
                 m.SetCoreStats(1, 20, 10, 0, m.GetNumber(SaveModel.Gold, 0), 0);
                 m.SetFlag(26, 0);
                 m.SetNumber(SaveModel.Plot, 0);
             });
-            AddFeature(list, "Route Control", "Neutral Light", "Sets a low-kill neutral state.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
+            AddFeature(list, "Route Setup", "Neutral Light", "Sets a low-kill neutral state.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
             {
                 m.SetCoreStats(4, 32, 16, 70, m.GetNumber(SaveModel.Gold, 0), 4);
                 m.SetFlag(26, 0);
             });
-            AddFeature(list, "Route Control", "Neutral Heavy", "Sets a high-kill neutral state.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
+            AddFeature(list, "Route Setup", "Neutral Heavy", "Sets a high-kill neutral state.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
             {
                 m.SetCoreStats(15, 76, 38, 7000, m.GetNumber(SaveModel.Gold, 0), 75);
                 m.SetFlag(26, 0);
             });
-            AddFeature(list, "Route Control", "Genocide Start", "Starts the murder-route override.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
+            AddFeature(list, "Route Setup", "Genocide Start", "Starts the murder-route override.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
             {
                 m.SetFlag(26, 4);
                 m.SetNumber(SaveModel.Kills, Math.Max(20, m.GetNumber(SaveModel.Kills, 0)));
             });
-            AddFeature(list, "Route Control", "Genocide Locked", "Sets murder-route override to the max threshold.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
+            AddFeature(list, "Route Setup", "Genocide Locked", "Sets murder-route override to the max threshold.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
             {
                 m.SetFlag(26, 16);
                 m.SetCoreStats(20, 99, Math.Max(30, m.DamagePower()), 99999, m.GetNumber(SaveModel.Gold, 0), 999);
             });
-            AddFeature(list, "Route Control", "Abort Genocide", "Drops murder route back to neutral.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r)
+            AddFeature(list, "Route Setup", "Abort Genocide", "Drops murder route back to neutral.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r)
             {
                 m.SetFlag(26, 0);
                 m.SetNumber(SaveModel.Kills, Math.Min(10, m.GetNumber(SaveModel.Kills, 0)));
             });
-            AddFeature(list, "Route Control", "Toriel Cleared", "Marks early Ruins progress.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 25); m.SetNumber(SaveModel.Room, 43); });
-            AddFeature(list, "Route Control", "Snowdin Cleared", "Marks Snowdin progress.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 80); m.SetNumber(SaveModel.Room, 81); });
-            AddFeature(list, "Route Control", "Waterfall Cleared", "Marks Waterfall progress.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 130); m.SetNumber(SaveModel.Room, 141); });
-            AddFeature(list, "Route Control", "Hotland Cleared", "Marks Hotland progress.", Color.FromArgb(255, 120, 76), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 180); m.SetNumber(SaveModel.Room, 226); });
-            AddFeature(list, "Route Control", "Core Cleared", "Marks CORE progress.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 200); m.SetNumber(SaveModel.Room, 231); });
-            AddFeature(list, "Route Control", "True Lab Prep", "Sets late pacifist prep flags.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetFlag(251, 1); m.SetFlag(252, 1); m.SetNumber(SaveModel.Plot, 210); });
-            AddFeature(list, "Route Control", "Alphys Date Ready", "Sets common date-prep flags.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetFlag(402, 1); m.SetFlag(397, 1); });
-            AddFeature(list, "Route Control", "Mercy Chain", "Turns on several mercy route flags.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 27, 45, 52, 53, 54, 67, 81 }, 1); });
-            AddFeature(list, "Route Control", "Reset Mercy Flags", "Clears several mercy route flags.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 27, 45, 52, 53, 54, 67, 81 }, 0); });
-            AddFeature(list, "Route Control", "Bosses Alive", "Clears common boss defeated flags.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 52, 53, 54, 57, 67, 81, 251, 252, 350, 397, 402, 425 }, 0); });
-            AddFeature(list, "Route Control", "Bosses Cleared", "Sets common boss defeated flags.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 52, 53, 54, 57, 67, 81, 251, 252, 350, 397, 402, 425 }, 1); });
-            AddFeature(list, "Route Control", "Random Murder Meter", "Randomizes the murder-route override value.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { m.SetFlag(26, r.Next(0, 17)); });
+            AddFeature(list, "Route Setup", "Toriel Cleared", "Marks early Ruins progress.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 25); m.SetNumber(SaveModel.Room, 43); });
+            AddFeature(list, "Route Setup", "Snowdin Cleared", "Marks Snowdin progress.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 80); m.SetNumber(SaveModel.Room, 81); });
+            AddFeature(list, "Route Setup", "Waterfall Cleared", "Marks Waterfall progress.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 130); m.SetNumber(SaveModel.Room, 141); });
+            AddFeature(list, "Route Setup", "Hotland Cleared", "Marks Hotland progress.", Color.FromArgb(255, 120, 76), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 180); m.SetNumber(SaveModel.Room, 226); });
+            AddFeature(list, "Route Setup", "Core Cleared", "Marks CORE progress.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 200); m.SetNumber(SaveModel.Room, 231); });
+            AddFeature(list, "Route Setup", "Pacifist Finale", "Sets a no-kill finale state at Sans corridor.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetCoreStats(1, 20, 10, 0, m.GetNumber(SaveModel.Gold, 0), 0); m.SetFlag(26, 0); m.SetNumber(SaveModel.Plot, 210); m.SetNumber(SaveModel.Room, 231); });
+            AddFeature(list, "Route Setup", "Neutral Finale", "Sets a neutral finale state at Sans corridor.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetCoreStats(12, 64, 32, 2500, m.GetNumber(SaveModel.Gold, 0), 20); m.SetFlag(26, 0); m.SetNumber(SaveModel.Plot, 210); m.SetNumber(SaveModel.Room, 231); });
+            AddFeature(list, "Route Setup", "Genocide Finale", "Sets an LV20 murder-route finale state.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { m.SetFlag(26, 16); m.SetCoreStats(20, 99, Math.Max(30, m.DamagePower()), 99999, m.GetNumber(SaveModel.Gold, 0), 999); m.SetNumber(SaveModel.Plot, 210); m.SetNumber(SaveModel.Room, 231); });
+            AddFeature(list, "Route Setup", "True Lab Prep", "Sets late-pacifist plot and True Lab access basics.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetFlag(251, 1); m.SetFlag(252, 1); m.SetNumber(SaveModel.Plot, 210); m.SetNumber(SaveModel.Room, 246); });
         }
 
         private void AddRoomFeatures(List<FeatureDef> list)
         {
-            int[] ids = new int[] { 4, 6, 32, 37, 43, 44, 56, 68, 71, 73, 76, 78, 81, 82, 91, 104, 123, 131, 141, 153, 165, 176, 184, 193, 205, 213, 226, 231, 237, 241, 246, 253, 264, 275, 296, 326 };
-            for (int i = 0; i < ids.Length; i++)
+            AddRoomWarp(list, "First Room", 4, 0, "Warps to the first playable room.");
+            AddRoomWarp(list, "Toriel House", 32, 18, "Warps inside Toriel's house.");
+            AddRoomWarp(list, "Ruins Exit", 43, 25, "Warps to the door leaving the Ruins.");
+            AddRoomWarp(list, "Snowdin Forest", 44, 45, "Warps to the first Snowdin forest room.");
+            AddRoomWarp(list, "Spaghetti Puzzle", 56, 58, "Warps to Papyrus' spaghetti puzzle.");
+            AddRoomWarp(list, "Snowdin Town", 68, 80, "Warps to the main Snowdin town street.");
+            AddRoomWarp(list, "Snowdin Inn", 71, 80, "Warps directly to the Snowdin Inn.");
+            AddRoomWarp(list, "Grillby's", 73, 80, "Warps into Grillby's restaurant.");
+            AddRoomWarp(list, "Papyrus House", 76, 82, "Warps into Papyrus and Sans' house.");
+            AddRoomWarp(list, "Waterfall Start", 82, 90, "Warps to the start of Waterfall.");
+            AddRoomWarp(list, "Waterfall Statue", 104, 110, "Warps to the statue and umbrella room.");
+            AddRoomWarp(list, "Temmie Village", 128, 125, "Warps straight into Temmie Village.");
+            AddRoomWarp(list, "Undyne House", 118, 135, "Warps to Undyne's house area.");
+            AddRoomWarp(list, "Hotland Lab", 141, 145, "Warps to Alphys' lab entrance.");
+            AddRoomWarp(list, "Cooking Show", 154, 160, "Warps to Mettaton's cooking-show room.");
+            AddRoomWarp(list, "MTT Resort", 183, 185, "Warps to the MTT Resort lobby.");
+            AddRoomWarp(list, "CORE Center", 204, 200, "Warps to the CORE center hub.");
+            AddRoomWarp(list, "Final Elevator", 215, 205, "Warps to the final elevator path.");
+            AddRoomWarp(list, "Sans Corridor", 231, 210, "Warps to the judgement hallway.");
+            AddRoomWarp(list, "Throne Room", 235, 212, "Warps to Asgore's throne room.");
+            AddRoomWarp(list, "Barrier", 237, 215, "Warps to the Barrier room.");
+            AddRoomWarp(list, "True Lab Hub", 246, 210, "Warps to the True Lab central hub.");
+            AddRoomWarp(list, "Mystery Man", 269, 210, "Warps to the hidden Mystery Man room.");
+            AddRoomWarp(list, "Sound Test", 270, 210, "Warps to the hidden sound-test room.");
+            AddRoomWarp(list, "Dog Shrine", 335, 210, "Warps to the Dog Shrine room.");
+        }
+
+        private void AddRoomWarp(List<FeatureDef> list, string name, int roomId, int plot, string description)
+        {
+            AddFeature(list, "Room Teleports", name, description + " Room ID " + roomId.ToString() + ".", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r)
             {
-                int roomId = ids[i];
-                string roomName = RoomName(roomId);
-                AddFeature(list, "Room Warps", "Warp " + roomName, "Sets current room to " + roomName + ".", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r)
-                {
-                    m.SetNumber(SaveModel.Room, roomId);
-                });
-            }
+                m.SetNumber(SaveModel.Room, roomId);
+                m.SetNumber(SaveModel.Plot, plot);
+            });
         }
 
         private void AddInventoryFeatures(List<FeatureDef> list)
         {
-            AddInventoryFeature(list, "Best Heals", new int[] { 11, 43, 43, 40, 40, 21, 17, 17 }, 3, 4);
-            AddInventoryFeature(list, "Pie Stack", new int[] { 11, 11, 11, 11, 11, 11, 11, 11 }, 3, 4);
-            AddInventoryFeature(list, "Legendary Heals", new int[] { 40, 40, 40, 40, 40, 40, 40, 40 }, 3, 4);
-            AddInventoryFeature(list, "Snowman Army", new int[] { 16, 16, 16, 16, 16, 16, 16, 16 }, 3, 4);
-            AddInventoryFeature(list, "Temmie Mode", new int[] { 22, 22, 22, 22, 22, 22, 22, 22 }, 3, 4);
-            AddInventoryFeature(list, "Weapon Museum", new int[] { 3, 13, 14, 25, 45, 47, 49, 51 }, 52, 53);
-            AddInventoryFeature(list, "Armor Closet", new int[] { 4, 12, 15, 24, 44, 46, 48, 50 }, 3, 53);
-            AddInventoryFeature(list, "Real Knife Kit", new int[] { 52, 53, 11, 40, 40, 43, 43, 21 }, 52, 53);
-            AddInventoryFeature(list, "Punch Card Pack", new int[] { 26, 26, 26, 26, 26, 26, 26, 26 }, 3, 4);
-            AddInventoryFeature(list, "Spider Buffet", new int[] { 7, 10, 7, 10, 7, 10, 7, 10 }, 3, 4);
-            AddInventoryFeature(list, "Sans Snacks", new int[] { 17, 17, 17, 19, 21, 21, 40, 43 }, 3, 4);
-            AddInventoryFeature(list, "Empty Bag", new int[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 3, 4);
-            AddInventoryFeature(list, "Boss Attack Tokens", new int[] { 9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008 }, 52, 53);
-            AddInventoryFeature(list, "Bone Loadout", new int[] { 9002, 9002, 9006, 9006, 9008, 9008, 11, 40 }, 52, 53);
-            AddInventoryFeature(list, "Spear Loadout", new int[] { 9003, 9003, 9003, 9007, 9007, 11, 40, 43 }, 52, 53);
-            AddInventoryFeature(list, "Blaster Loadout", new int[] { 9001, 9001, 9001, 9001, 9005, 9005, 11, 40 }, 52, 53);
-            AddInventoryFeature(list, "Random Normal Items", null, 3, 4);
-            AddInventoryFeature(list, "Random Battle Tokens", new int[] { 9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008 }, 52, 53);
+            AddInventoryFeature(list, "Starter Bag", new int[] { 11, 4, 3, 0, 0, 0, 0, 0 }, 3, 4, "Sets a small starter bag with pie, stick, and bandage.");
+            AddInventoryFeature(list, "Best Heals", new int[] { 11, 43, 43, 40, 40, 21, 17, 17 }, 3, 4, "Fills the bag with strong healing food.");
+            AddInventoryFeature(list, "Pie Stack", new int[] { 11, 11, 11, 11, 11, 11, 11, 11 }, 3, 4, "Fills every slot with Butterscotch Pie.");
+            AddInventoryFeature(list, "Legendary Heals", new int[] { 40, 40, 40, 40, 40, 40, 40, 40 }, 3, 4, "Fills every slot with Legendary Heroes.");
+            AddInventoryFeature(list, "Snowman Army", new int[] { 16, 16, 16, 16, 16, 16, 16, 16 }, 3, 4, "Fills every slot with Snowman Pieces.");
+            AddInventoryFeature(list, "Temmie Mode", new int[] { 22, 22, 22, 22, 22, 22, 22, 22 }, 3, 4, "Fills the bag with Temmie Flakes.");
+            AddInventoryFeature(list, "Weapon Museum", new int[] { 3, 13, 14, 25, 45, 47, 49, 51 }, 52, 53, "Places the main weapons in the bag and equips late gear.");
+            AddInventoryFeature(list, "Armor Closet", new int[] { 4, 12, 15, 24, 44, 46, 48, 50 }, 3, 53, "Places the main armors in the bag and equips strong armor.");
+            AddInventoryFeature(list, "Real Knife Kit", new int[] { 52, 53, 11, 40, 40, 43, 43, 21 }, 52, 53, "Equips Real Knife/Locket and adds premium heals.");
+            AddInventoryFeature(list, "Punch Card Pack", new int[] { 26, 26, 26, 26, 26, 26, 26, 26 }, 3, 4, "Fills the bag with Punch Cards for item testing.");
+            AddInventoryFeature(list, "Spider Buffet", new int[] { 7, 10, 7, 10, 7, 10, 7, 10 }, 3, 4, "Alternates Spider Donuts and Spider Ciders.");
+            AddInventoryFeature(list, "Sans Snacks", new int[] { 17, 17, 17, 19, 21, 21, 40, 43 }, 3, 4, "Adds hot dogs, noodles, steak, and late heals.");
+            AddInventoryFeature(list, "Empty Bag", new int[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 3, 4, "Clears every inventory slot and restores starter equipment.");
+            AddInventoryFeature(list, "Boss Attack Tokens", new int[] { 9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008 }, 52, 53, "Adds every custom boss-attack token once.");
+            AddInventoryFeature(list, "Bone Loadout", new int[] { 9002, 9002, 9006, 9006, 9008, 9008, 11, 40 }, 52, 53, "Adds bone-style mod tokens plus two heals.");
+            AddInventoryFeature(list, "Spear Loadout", new int[] { 9003, 9003, 9003, 9007, 9007, 11, 40, 43 }, 52, 53, "Adds spear-style mod tokens plus boss heals.");
+            AddInventoryFeature(list, "Blaster Loadout", new int[] { 9001, 9001, 9001, 9001, 9005, 9005, 11, 40 }, 52, 53, "Adds blaster-style mod tokens plus backup heals.");
         }
 
-        private void AddInventoryFeature(List<FeatureDef> list, string name, int[] ids, int weapon, int armor)
+        private void AddInventoryFeature(List<FeatureDef> list, string name, int[] ids, int weapon, int armor, string description)
         {
-            AddFeature(list, "Inventory Kits", name, "Sets inventory and equipment.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
+            AddFeature(list, "Inventory Loadouts", name, description, Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
             {
                 int[] next = new int[8];
-                if (ids == null)
+                for (int i = 0; i < next.Length; i++)
                 {
-                    int[] normal = ItemCatalog.NormalIds();
-                    for (int i = 0; i < next.Length; i++)
-                    {
-                        next[i] = normal[r.Next(normal.Length)];
-                    }
-                }
-                else if (name == "Random Battle Tokens")
-                {
-                    int[] tokens = ItemCatalog.BattleTokenIds();
-                    for (int i = 0; i < next.Length; i++)
-                    {
-                        next[i] = tokens[r.Next(tokens.Length)];
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < next.Length; i++)
-                    {
-                        next[i] = i < ids.Length ? ids[i] : 0;
-                    }
+                    next[i] = i < ids.Length ? ids[i] : 0;
                 }
                 m.SetInventory(next);
                 m.Equip(weapon, armor);
             });
         }
 
-        private void AddBattleFlagFeatures(List<FeatureDef> list)
+        private void AddStoryFlagFeatures(List<FeatureDef> list)
         {
-            int[] flags = new int[] { 27, 45, 52, 53, 54, 57, 67, 81, 202, 203, 204, 205, 251, 252, 300, 350, 397, 402, 425, 493 };
-            for (int i = 0; i < flags.Length; i++)
+            AddFeature(list, "Story Flags", "Mercy Chain On", "Turns on common spare/mercy progress flags.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 27, 45, 52, 53, 54, 67, 81 }, 1); });
+            AddFeature(list, "Story Flags", "Mercy Chain Off", "Clears common spare/mercy progress flags.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 27, 45, 52, 53, 54, 67, 81 }, 0); });
+            AddFeature(list, "Story Flags", "Bosses Alive", "Clears common boss defeated flags.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 52, 53, 54, 57, 67, 81, 251, 252, 350, 397, 402, 425 }, 0); });
+            AddFeature(list, "Story Flags", "Bosses Cleared", "Sets common boss defeated flags.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 52, 53, 54, 57, 67, 81, 251, 252, 350, 397, 402, 425 }, 1); });
+            AddFeature(list, "Story Flags", "Toriel Clear Flag", "Marks Toriel's early boss progress as complete.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetFlag(52, 1); });
+            AddFeature(list, "Story Flags", "Papyrus Clear Flag", "Marks Papyrus' boss progress as complete.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetFlag(67, 1); });
+            AddFeature(list, "Story Flags", "Undyne Clear Flag", "Marks Undyne's boss progress as complete.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetFlag(81, 1); });
+            AddFeature(list, "Story Flags", "Mettaton Clear Flag", "Marks Mettaton's late-game progress as complete.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetFlag(350, 1); m.SetFlag(425, 1); });
+            AddFeature(list, "Story Flags", "True Lab Unlocked", "Enables common late-pacifist True Lab access flags.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetFlag(251, 1); m.SetFlag(252, 1); m.SetFlag(397, 1); m.SetFlag(402, 1); });
+            AddFeature(list, "Story Flags", "True Lab Locked", "Clears common True Lab access flags.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetFlag(251, 0); m.SetFlag(252, 0); m.SetFlag(397, 0); m.SetFlag(402, 0); });
+            AddFeature(list, "Story Flags", "Alphys Date Ready", "Sets the flags usually needed for Alphys date prep.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetFlag(402, 1); m.SetFlag(397, 1); });
+            AddFeature(list, "Story Flags", "Boss Counters Reset", "Resets common boss counter flags to zero.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r)
             {
-                int flag = flags[i];
-                AddFeature(list, "Battle Flags", "Flag " + flag.ToString() + " ON", "Sets global flag " + flag.ToString() + " to 1.", Color.FromArgb(255, 120, 76), delegate(SaveModel m, Random r) { m.SetFlag(flag, 1); });
-                AddFeature(list, "Battle Flags", "Flag " + flag.ToString() + " OFF", "Sets global flag " + flag.ToString() + " to 0.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetFlag(flag, 0); });
-            }
-            AddFeature(list, "Battle Flags", "Major Boss Chain", "Sets several boss-progress flags.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 45, 52, 53, 54, 57, 67, 81, 251, 252, 350, 397, 402, 425 }, 1); });
-            AddFeature(list, "Battle Flags", "Clear Boss Chain", "Clears several boss-progress flags.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetFlags(new int[] { 45, 52, 53, 54, 57, 67, 81, 251, 252, 350, 397, 402, 425 }, 0); });
-            AddFeature(list, "Battle Flags", "Random Boss Counters", "Randomizes common boss counter flags.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
+                m.SetFlag(202, 0);
+                m.SetFlag(203, 0);
+                m.SetFlag(204, 0);
+                m.SetFlag(205, 0);
+                m.SetFlag(493, 0);
+            });
+            AddFeature(list, "Story Flags", "Boss Counters Complete", "Sets common boss counters to high completed values.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
             {
-                m.SetFlag(202, r.Next(0, 21));
-                m.SetFlag(203, r.Next(0, 17));
-                m.SetFlag(204, r.Next(0, 19));
-                m.SetFlag(205, r.Next(0, 41));
-                m.SetFlag(493, r.Next(0, 13));
+                m.SetFlag(202, 20);
+                m.SetFlag(203, 16);
+                m.SetFlag(204, 18);
+                m.SetFlag(205, 40);
+                m.SetFlag(493, 12);
             });
         }
 
         private void AddWorldFeatures(List<FeatureDef> list)
         {
-            AddFeature(list, "World State", "Plot 0", "Sets plot to 0.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 0); });
-            AddFeature(list, "World State", "Plot 50", "Sets plot to 50.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 50); });
-            AddFeature(list, "World State", "Plot 100", "Sets plot to 100.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 100); });
-            AddFeature(list, "World State", "Plot 150", "Sets plot to 150.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 150); });
-            AddFeature(list, "World State", "Plot 200", "Sets plot to 200.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 200); });
-            AddFeature(list, "World State", "Random Plot", "Randomizes plot.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, r.Next(0, 221)); });
-            AddFeature(list, "World State", "Time Zero", "Sets playtime to 0.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, 0); });
-            AddFeature(list, "World State", "Time 1 Hour", "Sets playtime to 3600.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, 3600); });
-            AddFeature(list, "World State", "Time 9 Hours", "Sets playtime to 32400.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, 32400); });
-            AddFeature(list, "World State", "Random Time", "Randomizes playtime.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, r.Next(0, 999999)); });
-            AddFeature(list, "World State", "Music Off", "Sets current song to -1.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Song, -1); });
-            AddFeature(list, "World State", "Music Random", "Randomizes current song id.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Song, r.Next(-1, 500)); });
-            AddFeature(list, "Phone & Menu", "Clear Phones", "Clears phone slots.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetPhoneSlots(0); });
-            AddFeature(list, "Phone & Menu", "Phone Page 1", "Sets phone slots to 1.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetPhoneSlots(1); });
-            AddFeature(list, "Phone & Menu", "Phone Page 2", "Sets phone slots to 2.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetPhoneSlots(2); });
-            AddFeature(list, "Phone & Menu", "Menu Choice 1", "Sets menu choices to 1.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(543, 1); m.SetNumber(544, 1); m.SetNumber(545, 1); });
-            AddFeature(list, "Phone & Menu", "Menu Choice 0", "Sets menu choices to 0.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(543, 0); m.SetNumber(544, 0); m.SetNumber(545, 0); });
-            AddFeature(list, "Phone & Menu", "Random Menu Choices", "Randomizes menu choices.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetNumber(543, r.Next(0, 4)); m.SetNumber(544, r.Next(0, 4)); m.SetNumber(545, r.Next(0, 4)); });
-        }
-
-        private void AddChaosFeatures(List<FeatureDef> list)
-        {
-            AddFeature(list, "Chaos Tools", "Random Core", "Randomizes core player numbers.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
-            {
-                int lv = r.Next(1, 5001);
-                m.SetCoreStats(lv, SaveModel.Clamp(16 + (lv * 4), 1, PowerMax), r.Next(0, PowerMax + 1), r.Next(0, PowerMax + 1), r.Next(0, PowerMax + 1), r.Next(0, 500));
-            });
-            AddFeature(list, "Chaos Tools", "Random Player Room", "Warps to a random player room.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { SetRandomRoom(m, r, true); });
-            AddFeature(list, "Chaos Tools", "Random Any Room", "Warps to a random loaded room.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { SetRandomRoom(m, r, false); });
-            AddFeature(list, "Chaos Tools", "Random Inventory", "Randomizes regular inventory.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r)
-            {
-                int[] normal = ItemCatalog.NormalIds();
-                int[] ids = new int[8];
-                for (int i = 0; i < ids.Length; i++) ids[i] = normal[r.Next(normal.Length)];
-                m.SetInventory(ids);
-            });
-            AddFeature(list, "Chaos Tools", "Random Tokens", "Randomizes battle-token inventory.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
-            {
-                int[] tokens = ItemCatalog.BattleTokenIds();
-                int[] ids = new int[8];
-                for (int i = 0; i < ids.Length; i++) ids[i] = tokens[r.Next(tokens.Length)];
-                m.SetInventory(ids);
-            });
-            AddFeature(list, "Chaos Tools", "Random Route", "Randomizes murder flag and kills.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetFlag(26, r.Next(0, 17)); m.SetNumber(SaveModel.Kills, r.Next(0, 250)); });
-            AddFeature(list, "Chaos Tools", "Random FUN", "Randomizes FUN.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetFun(r.Next(1, 101)); });
-            AddFeature(list, "Chaos Tools", "Scramble Flags 0-50", "Randomizes early global flags.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { for (int i = 0; i <= 50; i++) m.SetFlag(i, r.Next(0, 3)); });
-            AddFeature(list, "Chaos Tools", "Clear Flags 0-50", "Clears early global flags.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { for (int i = 0; i <= 50; i++) m.SetFlag(i, 0); });
-            AddFeature(list, "Chaos Tools", "Scramble Flags 200-260", "Randomizes mid-game global flags.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r) { for (int i = 200; i <= 260; i++) m.SetFlag(i, r.Next(0, 4)); });
-            AddFeature(list, "Chaos Tools", "Clear Flags 200-260", "Clears mid-game global flags.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { for (int i = 200; i <= 260; i++) m.SetFlag(i, 0); });
-            AddFeature(list, "Chaos Tools", "Random Equipment", "Randomizes weapon and armor.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r)
-            {
-                int[] weapons = new int[] { 3, 13, 14, 25, 45, 47, 49, 51, 52 };
-                int[] armors = new int[] { 4, 12, 15, 24, 44, 46, 48, 50, 53, 64 };
-                m.Equip(weapons[r.Next(weapons.Length)], armors[r.Next(armors.Length)]);
-            });
-            AddFeature(list, "Chaos Tools", "Live Config Now", "Refreshes codex_live.ini.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.WriteLiveConfig(true); });
-            AddFeature(list, "Chaos Tools", "Full Chaos Run", "Randomizes stats, room, inventory, route, FUN, and plot.", Color.FromArgb(255, 63, 92), delegate(SaveModel m, Random r)
-            {
-                int lv = r.Next(1, 5001);
-                m.SetCoreStats(lv, SaveModel.Clamp(16 + (lv * 4), 1, PowerMax), r.Next(0, PowerMax + 1), r.Next(0, PowerMax + 1), r.Next(0, PowerMax + 1), r.Next(0, 500));
-                SetRandomRoom(m, r, true);
-                int[] normal = ItemCatalog.NormalIds();
-                int[] ids = new int[8];
-                for (int i = 0; i < ids.Length; i++) ids[i] = normal[r.Next(normal.Length)];
-                m.SetInventory(ids);
-                m.SetFlag(26, r.Next(0, 17));
-                m.SetFun(r.Next(1, 101));
-                m.SetNumber(SaveModel.Plot, r.Next(0, 221));
-            });
-        }
-
-        private void AddFeatureMatrix(List<FeatureDef> list)
-        {
-            AddMatrixPower(list, 20000);
-            AddMatrixRoutes(list, 15000);
-            AddMatrixRooms(list, 20000);
-            AddMatrixInventory(list, 20000);
-            AddMatrixFlags(list, 15000);
-            AddMatrixChaos(list, 10000);
-        }
-
-        private void AddMatrixPower(List<FeatureDef> list, int count)
-        {
-            Color accent = Color.FromArgb(85, 220, 155);
-            for (int i = 0; i < count; i++)
-            {
-                int seed = i;
-                AddFeature(list, "100K Power Presets", "Boost Stats #" + seed.ToString("00000"), "Sets LV, HP, DMG, EXP, gold, kills, and FUN.", accent, delegate(SaveModel m, Random r)
-                {
-                    int lv = MatrixPick(seed, 1, 5000) + 1;
-                    int hp = MatrixPick(seed, 2, PowerMax - 1) + 1;
-                    int damage = MatrixPick(seed, 3, PowerMax);
-                    int xp = MatrixPick(seed, 4, PowerMax);
-                    int gold = MatrixPick(seed, 5, PowerMax);
-                    int kills = MatrixPick(seed, 6, 999999);
-                    m.SetCoreStats(lv, hp, damage, xp, gold, kills);
-                    m.SetFun(MatrixPick(seed, 7, 100) + 1);
-                });
-            }
-        }
-
-        private void AddMatrixRoutes(List<FeatureDef> list, int count)
-        {
-            Color accent = Color.FromArgb(255, 63, 92);
-            for (int i = 0; i < count; i++)
-            {
-                int seed = i;
-                AddFeature(list, "100K Route Presets", "Change Route #" + seed.ToString("00000"), "Sets route flags, kills, plot, FUN, LV, and EXP.", accent, delegate(SaveModel m, Random r)
-                {
-                    int murder = MatrixPick(seed, 11, 17);
-                    m.SetFlag(26, murder);
-                    m.SetNumber(SaveModel.Kills, MatrixPick(seed, 12, 999999));
-                    m.SetNumber(SaveModel.Plot, MatrixPick(seed, 13, 221));
-                    m.SetFun(MatrixPick(seed, 14, 100) + 1);
-                    if (murder >= 16)
-                    {
-                        m.SetNumber(SaveModel.Lv, 20);
-                        m.SetNumber(SaveModel.Xp, 99999);
-                    }
-                    else if (murder == 0 && MatrixPick(seed, 15, 2) == 0)
-                    {
-                        m.SetNumber(SaveModel.Lv, 1);
-                        m.SetNumber(SaveModel.Xp, 0);
-                    }
-                });
-            }
-        }
-
-        private void AddMatrixRooms(List<FeatureDef> list, int count)
-        {
-            Color accent = Color.FromArgb(54, 151, 255);
-            RoomWarp[] rooms = allRooms == null || allRooms.Length == 0 ? new RoomWarp[] { new RoomWarp(4, "room_area1") } : allRooms;
-            for (int i = 0; i < count; i++)
-            {
-                int seed = i;
-                RoomWarp room = rooms[seed % rooms.Length];
-                AddFeature(list, "100K Room Teleports", "Teleport To " + CleanRoomName(room.Name), "Sets current room and plot for " + CleanRoomName(room.Name) + ".", accent, delegate(SaveModel m, Random r)
-                {
-                    RoomWarp chosen = rooms[MatrixPick(seed, 21, rooms.Length)];
-                    m.SetNumber(SaveModel.Room, chosen.Id);
-                    m.SetNumber(SaveModel.Plot, MatrixPick(seed, 22, 221));
-                });
-            }
-        }
-
-        private void AddMatrixInventory(List<FeatureDef> list, int count)
-        {
-            Color accent = Color.FromArgb(255, 195, 70);
-            int[] normal = ItemCatalog.NormalIds();
-            int[] tokens = ItemCatalog.BattleTokenIds();
-            if (normal.Length == 0) normal = new int[] { 0 };
-            if (tokens.Length == 0) tokens = new int[] { 9001 };
-            int[] weapons = new int[] { 3, 13, 14, 25, 45, 47, 49, 51, 52 };
-            int[] armors = new int[] { 4, 12, 15, 24, 44, 46, 48, 50, 53, 64 };
-            for (int i = 0; i < count; i++)
-            {
-                int seed = i;
-                AddFeature(list, "100K Inventory Kits", "Fill Inventory #" + seed.ToString("00000"), "Sets inventory slots, weapon, and armor.", accent, delegate(SaveModel m, Random r)
-                {
-                    int[] ids = new int[8];
-                    for (int slot = 0; slot < ids.Length; slot++)
-                    {
-                        bool useToken = MatrixPick(seed, 31 + slot, 5) == 0;
-                        ids[slot] = useToken ? tokens[MatrixPick(seed, 41 + slot, tokens.Length)] : normal[MatrixPick(seed, 51 + slot, normal.Length)];
-                    }
-                    m.SetInventory(ids);
-                    m.Equip(weapons[MatrixPick(seed, 61, weapons.Length)], armors[MatrixPick(seed, 62, armors.Length)]);
-                });
-            }
-        }
-
-        private void AddMatrixFlags(List<FeatureDef> list, int count)
-        {
-            Color accent = Color.FromArgb(125, 112, 255);
-            for (int i = 0; i < count; i++)
-            {
-                int seed = i;
-                int baseFlag = seed % 512;
-                AddFeature(list, "100K Save Flag Tools", "Set Flags Near " + baseFlag.ToString(), "Changes five global flags and plot value.", accent, delegate(SaveModel m, Random r)
-                {
-                    int start = seed % 512;
-                    for (int offset = 0; offset < 5; offset++)
-                    {
-                        m.SetFlag((start + offset) % 512, MatrixPick(seed, 71 + offset, 17));
-                    }
-                    m.SetNumber(SaveModel.Plot, MatrixPick(seed, 80, 221));
-                });
-            }
-        }
-
-        private void AddMatrixChaos(List<FeatureDef> list, int count)
-        {
-            Color accent = Color.FromArgb(255, 120, 76);
-            RoomWarp[] rooms = allRooms == null || allRooms.Length == 0 ? new RoomWarp[] { new RoomWarp(4, "room_area1") } : allRooms;
-            int[] normal = ItemCatalog.NormalIds();
-            int[] tokens = ItemCatalog.BattleTokenIds();
-            if (normal.Length == 0) normal = new int[] { 0 };
-            if (tokens.Length == 0) tokens = new int[] { 9001 };
-            for (int i = 0; i < count; i++)
-            {
-                int seed = i;
-                AddFeature(list, "100K Chaos Presets", "Full Chaos #" + seed.ToString("00000"), "Randomizes stats, room, route, items, FUN, and flags.", accent, delegate(SaveModel m, Random r)
-                {
-                    int lv = MatrixPick(seed, 91, 5000) + 1;
-                    int hp = MatrixPick(seed, 92, PowerMax - 1) + 1;
-                    int damage = MatrixPick(seed, 93, PowerMax);
-                    int xp = MatrixPick(seed, 94, PowerMax);
-                    int gold = MatrixPick(seed, 95, PowerMax);
-                    int kills = MatrixPick(seed, 96, 999999);
-                    m.SetCoreStats(lv, hp, damage, xp, gold, kills);
-                    m.SetFun(MatrixPick(seed, 97, 100) + 1);
-                    m.SetFlag(26, MatrixPick(seed, 98, 17));
-                    m.SetNumber(SaveModel.Plot, MatrixPick(seed, 99, 221));
-                    m.SetNumber(SaveModel.Room, rooms[MatrixPick(seed, 100, rooms.Length)].Id);
-                    int[] ids = new int[8];
-                    for (int slot = 0; slot < ids.Length; slot++)
-                    {
-                        ids[slot] = MatrixPick(seed, 110 + slot, 3) == 0 ? tokens[MatrixPick(seed, 120 + slot, tokens.Length)] : normal[MatrixPick(seed, 130 + slot, normal.Length)];
-                    }
-                    m.SetInventory(ids);
-                    for (int offset = 0; offset < 6; offset++)
-                    {
-                        m.SetFlag(MatrixPick(seed, 140 + offset, 512), MatrixPick(seed, 150 + offset, 17));
-                    }
-                });
-            }
-        }
-
-        private int MatrixPick(int seed, int salt, int modulo)
-        {
-            if (modulo <= 0)
-            {
-                return 0;
-            }
-            unchecked
-            {
-                int x = seed;
-                x ^= salt * 374761393;
-                x = (x * 1103515245) + 12345;
-                x ^= (x >> 13);
-                x *= 1274126177;
-                if (x == int.MinValue)
-                {
-                    x = 0;
-                }
-                if (x < 0)
-                {
-                    x = -x;
-                }
-                return x % modulo;
-            }
+            AddFeature(list, "World Settings", "Plot: New Game", "Sets plot progress to the beginning of the run.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 0); });
+            AddFeature(list, "World Settings", "Plot: Ruins Clear", "Sets plot progress around the Ruins exit.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 50); });
+            AddFeature(list, "World Settings", "Plot: Waterfall", "Sets plot progress around Waterfall.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 100); });
+            AddFeature(list, "World Settings", "Plot: Hotland", "Sets plot progress around Hotland.", Color.FromArgb(255, 120, 76), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 150); });
+            AddFeature(list, "World Settings", "Plot: CORE", "Sets plot progress around the CORE.", Color.FromArgb(255, 195, 70), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Plot, 200); });
+            AddFeature(list, "World Settings", "Playtime: Zero", "Sets playtime to 0 seconds.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, 0); });
+            AddFeature(list, "World Settings", "Playtime: One Hour", "Sets playtime to exactly 1 hour.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, 3600); });
+            AddFeature(list, "World Settings", "Playtime: Nine Hours", "Sets playtime to exactly 9 hours.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Time, 32400); });
+            AddFeature(list, "World Settings", "Music Off", "Sets current song to silent/off.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Song, -1); });
+            AddFeature(list, "World Settings", "Default Menu Music", "Sets current song back to ID 0.", Color.FromArgb(125, 112, 255), delegate(SaveModel m, Random r) { m.SetNumber(SaveModel.Song, 0); });
+            AddFeature(list, "Phone & Menu", "Phone Hidden", "Clears phone slots for a minimal menu.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetPhoneSlots(0); });
+            AddFeature(list, "Phone & Menu", "Phone Page One", "Sets every phone slot to page 1.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetPhoneSlots(1); });
+            AddFeature(list, "Phone & Menu", "Phone Page Two", "Sets every phone slot to page 2.", Color.FromArgb(54, 151, 255), delegate(SaveModel m, Random r) { m.SetPhoneSlots(2); });
+            AddFeature(list, "Phone & Menu", "Menu Choices On", "Turns three stored menu choices on.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(543, 1); m.SetNumber(544, 1); m.SetNumber(545, 1); });
+            AddFeature(list, "Phone & Menu", "Menu Choices Off", "Clears three stored menu choices.", Color.FromArgb(85, 220, 155), delegate(SaveModel m, Random r) { m.SetNumber(543, 0); m.SetNumber(544, 0); m.SetNumber(545, 0); });
         }
 
         private void SetRandomRoom(SaveModel m, Random r, bool playerOnly)

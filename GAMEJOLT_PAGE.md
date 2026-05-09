@@ -2,11 +2,11 @@
 
 ## Title
 
-Undertale Mod Menu - Neon Feature Vault
+Undertale Mod Menu - Clean Feature Tools
 
 ## Short Description
 
-A Windows save/mod utility for Undertale with a thumbnail-style neon Feature Vault interface, uncapped stats, route tools, inventory editing, GameJolt mod browsing, and GitHub auto-updates.
+A Windows save/mod utility for Undertale with a cleaner neon interface, curated feature tools, uncapped stats, route editing, inventory editing, GameJolt mod browsing, and GitHub auto-updates.
 
 ## Long Description
 
@@ -14,14 +14,14 @@ Undertale Mod Menu is an unofficial Windows fan tool for editing local Undertale
 
 Features:
 
-- Thumbnail-inspired neon dashboard with glowing cards and a giant Feature Vault hero
+- Thumbnail-inspired neon dashboard with glowing cards and a cleaner Feature Tools hero
 - Easy Player Mode with Quick Start buttons and a built-in Player Guide
 - Cleaner room teleport with search, safe random, and any-room random buttons
-- Feature Vault buttons explain what they do directly on the button
+- Feature tabs are now curated sections instead of generated 100K placeholder lists
+- Feature buttons are professional cards with unique names and direct descriptions
 - Edit LEVEL, HP, EXP, GOLD, and DMG with uncapped number boxes
 - Change FUN, route state, kills, plot, room, and raw file0 lines
 - Use Inventory Forge for regular item IDs and experimental raw mod-token IDs
-- Randomize stats, rooms, items, routes, and battle-style flags with Chaos Console
 - Browse Undertale-tagged GameJolt projects inside the GameJolt Mod Hub
 - Install downloaded ZIP/folder mods into a managed local mod library
 - Check GitHub for updates and self-update when a newer build is published
@@ -48,17 +48,19 @@ Windows
 
 ## Release Name
 
-Neon Feature Vault Build
+Clean Feature Tools Build
 
 ## Version / Build
 
-202605091700
+202605091735
 
 ## Release Notes
 
+- Removed the visible Chaos tab/buttons from the main player UI
+- Replaced generated 100K Feature tabs with curated sections
+- Added professional feature cards with unique names and descriptions
 - Cleaned up room teleport so it is easier to search and warp
-- Replaced confusing Matrix labels with plain Feature Vault tool names
-- Added short descriptions directly on generated Feature Vault buttons
+- Replaced confusing Matrix labels with plain Feature Tools names
 - Restyled the app to match the neon Feature Vault thumbnail look
 - Added a big center hero panel and stacked glowing player-number cards
 - Added thumbnail-style preset tiles and a bottom action strip
@@ -68,9 +70,9 @@ Neon Feature Vault Build
 - Added GitHub self-updater with remote manifest support
 - Added release-first update download with raw repo fallback
 - Added GameJolt Mod Hub for browsing Undertale-tagged projects
-- Added Feature Vault 100K+
+- Added clean Feature Tools
 - Added uncapped LEVEL, HP, EXP, GOLD, and DMG controls
-- Added Inventory Forge and Chaos Console
+- Added Inventory Forge
 
 ## Launch File
 
@@ -78,4 +80,4 @@ UndertaleSaveStudioPro.exe
 
 ## Upload ZIP
 
-GameJolt_Undertale_Mod_Menu_NeonVault_202605091700.zip
+GameJolt_Undertale_Mod_Menu_CleanTools_202605091735.zip

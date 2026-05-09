@@ -1,5 +1,15 @@
 # Release Notes
 
+## Clean Feature Tabs Build
+
+### New
+
+- Removed the visible Chaos tab/buttons from the main player UI
+- Replaced generated `100K` Feature tabs with curated sections: Player Presets, Route Setup, Room Teleports, Inventory Loadouts, FUN Events, Story Flags, World Settings, and Phone & Menu
+- Rebuilt Feature buttons as professional cards with a category label, clear action name, and direct description
+- Removed generated Matrix/random-number feature builders so the Features menu no longer shows placeholder bulk buttons
+- Build manifest bumped to `202605091735`
+
 ## Cleaner Tools Build
 
 ### New

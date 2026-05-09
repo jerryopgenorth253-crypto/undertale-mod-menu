@@ -1,4 +1,4 @@
-Undertale Mod Menu - Neon Feature Vault
+Undertale Mod Menu - Clean Feature Tools
 
 Run:
 1. Double-click UndertaleSaveStudioPro.exe
@@ -18,5 +18,6 @@ Notes:
 - This package does not include downloaded GameJolt mod files.
 - Use it with your own legitimate copy of Undertale.
 - The auto-updater checks the configured GitHub repo for newer builds.
-- This build adds the thumbnail-style neon Feature Vault interface.
-- Room teleport and Feature Vault generated tool labels are cleaner in this build.
+- This build removes the visible Chaos tab/buttons from the main player UI.
+- Feature tabs are curated, professional sections instead of generated 100K placeholder lists.
+- Every Feature card now has a unique name and a direct description.

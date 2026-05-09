@@ -17,7 +17,7 @@ https://gamejolt.com/dashboard/games/add
 6. Upload:
 
 ```text
-C:\Users\Jerry\Downloads\GameJolt_Undertale_Mod_Menu_NeonVault_202605091700.zip
+C:\Users\Jerry\Downloads\GameJolt_Undertale_Mod_Menu_CleanTools_202605091735.zip
 ```
 
 7. Set the launch file to:

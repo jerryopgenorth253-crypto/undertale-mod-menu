@@ -23,6 +23,7 @@ Backups are created before save writes.
 | --- | --- |
 | Neon Feature Vault UI | Uses the thumbnail-inspired dark arcade look with glowing number cards, a big center hero, and bright action tiles. |
 | Easy Player Mode | Adds a first-run guide, Quick Start buttons, simple step labels, and tooltips for new players. |
+| Cleaner Feature Vault | Generated buttons show what they change directly on the button instead of vague Matrix labels. |
 | Player numbers | Edit level, HP, EXP, gold, and damage with large uncapped inputs. |
 | Route tools | Adjust FUN, route state, kills, murder-route flag, plot, room, and time. |
 | Inventory Forge | Add regular Undertale items and experimental raw mod-token IDs. |

@@ -1,5 +1,15 @@
 # Release Notes
 
+## Cleaner Tools Build
+
+### New
+
+- Room teleport in Chaos Console now has search, a room list, safe random, any-room random, and clearer status text
+- Feature Vault generated tools now use plain names such as Boost Stats, Change Route, Teleport, Fill Inventory, Set Flags, and Full Chaos
+- Feature Vault buttons now show a short description directly on each button
+- Removed the confusing public-facing "Matrix" labels from generated Feature Vault categories
+- Build manifest bumped to `202605091700`
+
 ## Neon Feature Vault Build
 
 ### New

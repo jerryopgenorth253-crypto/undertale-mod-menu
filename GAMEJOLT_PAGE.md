@@ -16,6 +16,8 @@ Features:
 
 - Thumbnail-inspired neon dashboard with glowing cards and a giant Feature Vault hero
 - Easy Player Mode with Quick Start buttons and a built-in Player Guide
+- Cleaner room teleport with search, safe random, and any-room random buttons
+- Feature Vault buttons explain what they do directly on the button
 - Edit LEVEL, HP, EXP, GOLD, and DMG with uncapped number boxes
 - Change FUN, route state, kills, plot, room, and raw file0 lines
 - Use Inventory Forge for regular item IDs and experimental raw mod-token IDs
@@ -50,10 +52,13 @@ Neon Feature Vault Build
 
 ## Version / Build
 
-202605091500
+202605091700
 
 ## Release Notes
 
+- Cleaned up room teleport so it is easier to search and warp
+- Replaced confusing Matrix labels with plain Feature Vault tool names
+- Added short descriptions directly on generated Feature Vault buttons
 - Restyled the app to match the neon Feature Vault thumbnail look
 - Added a big center hero panel and stacked glowing player-number cards
 - Added thumbnail-style preset tiles and a bottom action strip
@@ -73,4 +78,4 @@ UndertaleSaveStudioPro.exe
 
 ## Upload ZIP
 
-GameJolt_Undertale_Mod_Menu_NeonVault_202605091500.zip
+GameJolt_Undertale_Mod_Menu_NeonVault_202605091700.zip

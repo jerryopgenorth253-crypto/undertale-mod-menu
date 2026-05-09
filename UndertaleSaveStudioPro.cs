@@ -48,7 +48,7 @@ namespace UndertaleSaveStudioPro
     internal static class SelfUpdater
     {
         private const string ConfigFileName = "update.ini";
-        private const long CurrentBuild = 202605091500L;
+        private const long CurrentBuild = 202605091700L;
 
         public static void CheckForUpdates(Form owner, Action<string> report, bool userRequested)
         {
@@ -3698,7 +3698,7 @@ namespace UndertaleSaveStudioPro
             header.Controls.Add(countLabel);
 
             Label subtitle = new Label();
-            subtitle.Text = "Paged one-click matrix for stats, routes, flags, rooms, items, battles, and chaos runs.";
+            subtitle.Text = "One-click tools with plain labels: stats, routes, flags, room teleports, items, battles, and chaos runs.";
             subtitle.ForeColor = Color.FromArgb(224, 226, 235);
             subtitle.Location = new Point(32, 68);
             subtitle.AutoSize = true;
@@ -3892,17 +3892,17 @@ namespace UndertaleSaveStudioPro
         private Button MakeFeatureButton(FeatureDef def)
         {
             Button b = new Button();
-            b.Text = def.Name;
+            b.Text = def.Name + "\r\n" + Shorten(def.Description, 54);
             b.Tag = def;
-            b.Width = 238;
-            b.Height = 60;
+            b.Width = 252;
+            b.Height = 76;
             b.Margin = new Padding(6);
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderColor = def.Accent;
             b.FlatAppearance.BorderSize = 2;
             b.BackColor = Color.FromArgb(12, 17, 28);
             b.ForeColor = Color.White;
-            b.Font = new Font("Segoe UI Semibold", 8.5f, FontStyle.Bold);
+            b.Font = new Font("Segoe UI Semibold", 8.2f, FontStyle.Bold);
             b.Cursor = Cursors.Hand;
             b.TextAlign = ContentAlignment.MiddleCenter;
             tips.SetToolTip(b, def.Category + ": " + def.Description);
@@ -3916,6 +3916,16 @@ namespace UndertaleSaveStudioPro
             };
             b.Click += delegate { ApplyFeature(def); };
             return b;
+        }
+
+        private string Shorten(string value, int max)
+        {
+            string text = Regex.Replace(value ?? "", "\\s+", " ").Trim();
+            if (text.Length <= max)
+            {
+                return text;
+            }
+            return text.Substring(0, Math.Max(0, max - 3)).TrimEnd() + "...";
         }
 
         private List<FeatureDef> FilteredFeatures()
@@ -4270,7 +4280,7 @@ namespace UndertaleSaveStudioPro
             for (int i = 0; i < count; i++)
             {
                 int seed = i;
-                AddFeature(list, "100K Power Matrix", "Power Matrix " + seed.ToString("00000"), "Generated LV/HP/DMG/EXP/gold/kills preset.", accent, delegate(SaveModel m, Random r)
+                AddFeature(list, "100K Power Presets", "Boost Stats #" + seed.ToString("00000"), "Sets LV, HP, DMG, EXP, gold, kills, and FUN.", accent, delegate(SaveModel m, Random r)
                 {
                     int lv = MatrixPick(seed, 1, 5000) + 1;
                     int hp = MatrixPick(seed, 2, PowerMax - 1) + 1;
@@ -4290,7 +4300,7 @@ namespace UndertaleSaveStudioPro
             for (int i = 0; i < count; i++)
             {
                 int seed = i;
-                AddFeature(list, "100K Route Matrix", "Route Matrix " + seed.ToString("00000"), "Generated route, murder meter, plot, and kill-state preset.", accent, delegate(SaveModel m, Random r)
+                AddFeature(list, "100K Route Presets", "Change Route #" + seed.ToString("00000"), "Sets route flags, kills, plot, FUN, LV, and EXP.", accent, delegate(SaveModel m, Random r)
                 {
                     int murder = MatrixPick(seed, 11, 17);
                     m.SetFlag(26, murder);
@@ -4319,7 +4329,7 @@ namespace UndertaleSaveStudioPro
             {
                 int seed = i;
                 RoomWarp room = rooms[seed % rooms.Length];
-                AddFeature(list, "100K Room Matrix", "Room Matrix " + seed.ToString("00000"), "Generated room warp to " + room.Name + ".", accent, delegate(SaveModel m, Random r)
+                AddFeature(list, "100K Room Teleports", "Teleport To " + CleanRoomName(room.Name), "Sets current room and plot for " + CleanRoomName(room.Name) + ".", accent, delegate(SaveModel m, Random r)
                 {
                     RoomWarp chosen = rooms[MatrixPick(seed, 21, rooms.Length)];
                     m.SetNumber(SaveModel.Room, chosen.Id);
@@ -4340,7 +4350,7 @@ namespace UndertaleSaveStudioPro
             for (int i = 0; i < count; i++)
             {
                 int seed = i;
-                AddFeature(list, "100K Inventory Matrix", "Inventory Matrix " + seed.ToString("00000"), "Generated inventory/equipment preset.", accent, delegate(SaveModel m, Random r)
+                AddFeature(list, "100K Inventory Kits", "Fill Inventory #" + seed.ToString("00000"), "Sets inventory slots, weapon, and armor.", accent, delegate(SaveModel m, Random r)
                 {
                     int[] ids = new int[8];
                     for (int slot = 0; slot < ids.Length; slot++)
@@ -4361,7 +4371,7 @@ namespace UndertaleSaveStudioPro
             {
                 int seed = i;
                 int baseFlag = seed % 512;
-                AddFeature(list, "100K Flag Matrix", "Flag Matrix " + seed.ToString("00000"), "Generated multi-flag preset starting near flag " + baseFlag.ToString() + ".", accent, delegate(SaveModel m, Random r)
+                AddFeature(list, "100K Save Flag Tools", "Set Flags Near " + baseFlag.ToString(), "Changes five global flags and plot value.", accent, delegate(SaveModel m, Random r)
                 {
                     int start = seed % 512;
                     for (int offset = 0; offset < 5; offset++)
@@ -4384,7 +4394,7 @@ namespace UndertaleSaveStudioPro
             for (int i = 0; i < count; i++)
             {
                 int seed = i;
-                AddFeature(list, "100K Chaos Matrix", "Chaos Matrix " + seed.ToString("00000"), "Generated full-save chaos preset.", accent, delegate(SaveModel m, Random r)
+                AddFeature(list, "100K Chaos Presets", "Full Chaos #" + seed.ToString("00000"), "Randomizes stats, room, route, items, FUN, and flags.", accent, delegate(SaveModel m, Random r)
                 {
                     int lv = MatrixPick(seed, 91, 5000) + 1;
                     int hp = MatrixPick(seed, 92, PowerMax - 1) + 1;
@@ -4455,6 +4465,17 @@ namespace UndertaleSaveStudioPro
         {
             RoomWarp room = allRooms.FirstOrDefault(delegate(RoomWarp r) { return r.Id == id; });
             return room == null ? "room_" + id.ToString() : room.Name;
+        }
+
+        private string CleanRoomName(string name)
+        {
+            string text = Regex.Replace(name ?? "", "^room_", "", RegexOptions.IgnoreCase);
+            text = text.Replace('_', ' ').Trim();
+            if (text.Length == 0)
+            {
+                return "Room";
+            }
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text.ToLowerInvariant());
         }
 
         private int LevelHp(int lv)
@@ -4713,7 +4734,8 @@ namespace UndertaleSaveStudioPro
         private readonly SaveModel model;
         private readonly Random random = new Random();
         private const int PowerMax = 999999999;
-        private readonly ComboBox roomBox = new ComboBox();
+        private readonly TextBox roomSearchBox = new TextBox();
+        private readonly ListBox roomList = new ListBox();
         private readonly Label logLabel = new Label();
         private readonly RoomWarp[] allRooms;
         private readonly RoomWarp[] playerRooms;
@@ -4725,7 +4747,7 @@ namespace UndertaleSaveStudioPro
             playerRooms = RoomCatalog.PlayerRooms();
             Text = "Player Chaos Console";
             StartPosition = FormStartPosition.CenterParent;
-            Size = new Size(860, 670);
+            Size = new Size(900, 760);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -4757,31 +4779,61 @@ namespace UndertaleSaveStudioPro
             subtitle.AutoSize = true;
             header.Controls.Add(subtitle);
 
-            Panel board = MakePanel(new Point(22, 112), new Size(810, 470));
+            Panel board = MakePanel(new Point(22, 112), new Size(846, 560));
             Controls.Add(board);
 
-            AddLabel(board, "Room Warp", 22, 18);
-            roomBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            roomBox.Location = new Point(22, 42);
-            roomBox.Width = 360;
-            roomBox.BackColor = Color.FromArgb(7, 7, 10);
-            roomBox.ForeColor = Color.White;
-            roomBox.Items.AddRange(allRooms);
+            AddLabel(board, "Room Teleport", 22, 18);
+            Label roomHint = new Label();
+            roomHint.Text = "Search a room, select it, then warp. Use Safe Random for normal playable rooms.";
+            roomHint.ForeColor = Color.FromArgb(176, 186, 204);
+            roomHint.Location = new Point(22, 42);
+            roomHint.AutoSize = true;
+            board.Controls.Add(roomHint);
+
+            roomSearchBox.Location = new Point(22, 68);
+            roomSearchBox.Width = 360;
+            roomSearchBox.Height = 28;
+            roomSearchBox.BackColor = Color.FromArgb(7, 7, 10);
+            roomSearchBox.ForeColor = Color.White;
+            roomSearchBox.BorderStyle = BorderStyle.FixedSingle;
+            roomSearchBox.TextChanged += delegate { RefreshRoomList(); };
+            board.Controls.Add(roomSearchBox);
+
+            roomList.Location = new Point(22, 104);
+            roomList.Size = new Size(360, 96);
+            roomList.BackColor = Color.FromArgb(7, 7, 10);
+            roomList.ForeColor = Color.White;
+            roomList.BorderStyle = BorderStyle.FixedSingle;
+            roomList.IntegralHeight = false;
+            roomList.DoubleClick += delegate { WarpSelectedRoom(); };
+            board.Controls.Add(roomList);
+            RefreshRoomList();
             SelectCurrentRoom();
-            board.Controls.Add(roomBox);
 
             Button selectedRoom = MakeButton("Warp Selected", delegate { WarpSelectedRoom(); }, Color.FromArgb(54, 151, 255));
-            selectedRoom.Location = new Point(402, 38);
+            selectedRoom.Location = new Point(402, 72);
+            selectedRoom.Size = new Size(172, 44);
             board.Controls.Add(selectedRoom);
 
-            Button randomRoom = MakeButton("Random Room", delegate { RandomRoom(false); }, Color.FromArgb(85, 220, 155));
-            randomRoom.Location = new Point(562, 38);
+            Button randomRoom = MakeButton("Safe Random", delegate { RandomRoom(false); }, Color.FromArgb(85, 220, 155));
+            randomRoom.Location = new Point(586, 72);
+            randomRoom.Size = new Size(172, 44);
             board.Controls.Add(randomRoom);
 
+            Button anyRoom = MakeButton("Any Room", delegate { RandomRoom(true); }, Color.FromArgb(255, 195, 70));
+            anyRoom.Location = new Point(402, 128);
+            anyRoom.Size = new Size(172, 44);
+            board.Controls.Add(anyRoom);
+
+            Button resetSearch = MakeButton("Clear Search", delegate { roomSearchBox.Text = ""; }, Color.FromArgb(125, 112, 255));
+            resetSearch.Location = new Point(586, 128);
+            resetSearch.Size = new Size(172, 44);
+            board.Controls.Add(resetSearch);
+
             int x1 = 22;
-            int x2 = 286;
-            int x3 = 550;
-            int y = 104;
+            int x2 = 306;
+            int x3 = 590;
+            int y = 226;
             board.Controls.Add(TileButton("Random Stats", x1, y, delegate { RandomStats(); }, Color.FromArgb(85, 220, 155)));
             board.Controls.Add(TileButton("Random Items", x2, y, delegate { RandomItems(); }, Color.FromArgb(255, 195, 70)));
             board.Controls.Add(TileButton("Battle Tokens", x3, y, delegate { BattleTokens(); }, Color.FromArgb(255, 63, 92)));
@@ -4796,16 +4848,16 @@ namespace UndertaleSaveStudioPro
             y += 70;
             board.Controls.Add(TileButton("Chaos Run", x1, y, delegate { ChaosRun(); }, Color.FromArgb(255, 63, 92)));
             board.Controls.Add(TileButton("Raw Line Lab", x2, y, delegate { RawLineLab(); }, Color.FromArgb(125, 112, 255)));
-            board.Controls.Add(TileButton("Random Any Room", x3, y, delegate { RandomRoom(true); }, Color.FromArgb(54, 151, 255)));
+            board.Controls.Add(TileButton("Refresh Live", x3, y, delegate { model.WriteLiveConfig(true); Log("codex_live.ini refreshed from this in-memory save."); }, Color.FromArgb(54, 151, 255)));
 
             logLabel.Text = "Ready. Nothing writes to disk until the main window's Write Save button.";
             logLabel.ForeColor = Color.FromArgb(205, 205, 214);
-            logLabel.Location = new Point(24, 392);
-            logLabel.Size = new Size(760, 58);
+            logLabel.Location = new Point(24, 494);
+            logLabel.Size = new Size(794, 46);
             board.Controls.Add(logLabel);
 
             Button close = MakeButton("Done", delegate { Close(); }, Color.FromArgb(85, 220, 155));
-            close.Location = new Point(692, 600);
+            close.Location = new Point(728, 676);
             Controls.Add(close);
         }
 
@@ -4869,26 +4921,72 @@ namespace UndertaleSaveStudioPro
             return b;
         }
 
+        private void RefreshRoomList()
+        {
+            string search = (roomSearchBox.Text ?? "").Trim().ToLowerInvariant();
+            RoomWarp previous = roomList.SelectedItem as RoomWarp;
+            roomList.BeginUpdate();
+            roomList.Items.Clear();
+            foreach (RoomWarp room in allRooms)
+            {
+                string haystack = (room.Id.ToString() + " " + room.Name + " " + room.Name.Replace('_', ' ')).ToLowerInvariant();
+                if (search.Length == 0 || haystack.Contains(search))
+                {
+                    roomList.Items.Add(room);
+                }
+            }
+            if (previous != null)
+            {
+                for (int i = 0; i < roomList.Items.Count; i++)
+                {
+                    RoomWarp item = roomList.Items[i] as RoomWarp;
+                    if (item != null && item.Id == previous.Id)
+                    {
+                        roomList.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (roomList.SelectedIndex < 0 && roomList.Items.Count > 0)
+            {
+                roomList.SelectedIndex = 0;
+            }
+            roomList.EndUpdate();
+        }
+
         private void SelectCurrentRoom()
         {
             int current = model.GetNumber(SaveModel.Room, 4);
             RoomWarp match = allRooms.FirstOrDefault(delegate(RoomWarp room) { return room.Id == current; });
             if (match != null)
             {
-                roomBox.SelectedItem = match;
+                string clean = match.Name.ToLowerInvariant().Replace('_', ' ');
+                roomSearchBox.Text = clean;
+                RefreshRoomList();
+                for (int i = 0; i < roomList.Items.Count; i++)
+                {
+                    RoomWarp item = roomList.Items[i] as RoomWarp;
+                    if (item != null && item.Id == match.Id)
+                    {
+                        roomList.SelectedIndex = i;
+                        return;
+                    }
+                }
+                roomList.Items.Insert(0, match);
+                roomList.SelectedIndex = 0;
             }
-            else if (roomBox.Items.Count > 0)
+            else if (roomList.Items.Count > 0)
             {
-                roomBox.SelectedIndex = 0;
+                roomList.SelectedIndex = 0;
             }
         }
 
         private void WarpSelectedRoom()
         {
-            RoomWarp room = roomBox.SelectedItem as RoomWarp;
+            RoomWarp room = roomList.SelectedItem as RoomWarp;
             if (room == null) return;
             model.SetNumber(SaveModel.Room, room.Id);
-            Log("Room set to " + room.ToString() + ".");
+            Log("Teleport set to " + room.ToString() + ". Press Write Save in the main window to commit.");
         }
 
         private void RandomRoom(bool anyRoom)
@@ -4896,9 +4994,19 @@ namespace UndertaleSaveStudioPro
             RoomWarp[] source = anyRoom ? allRooms : playerRooms;
             if (source.Length == 0) source = allRooms;
             RoomWarp room = source[random.Next(source.Length)];
-            roomBox.SelectedItem = allRooms.FirstOrDefault(delegate(RoomWarp r) { return r.Id == room.Id; }) ?? room;
+            roomSearchBox.Text = "";
+            RefreshRoomList();
+            for (int i = 0; i < roomList.Items.Count; i++)
+            {
+                RoomWarp item = roomList.Items[i] as RoomWarp;
+                if (item != null && item.Id == room.Id)
+                {
+                    roomList.SelectedIndex = i;
+                    break;
+                }
+            }
             model.SetNumber(SaveModel.Room, room.Id);
-            Log("Random room: " + room.ToString() + ".");
+            Log((anyRoom ? "Any-room teleport" : "Safe random teleport") + " set to " + room.ToString() + ".");
         }
 
         private void RandomStats()

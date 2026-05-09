@@ -19,3 +19,4 @@ Notes:
 - Use it with your own legitimate copy of Undertale.
 - The auto-updater checks the configured GitHub repo for newer builds.
 - This build adds the thumbnail-style neon Feature Vault interface.
+- Room teleport and Feature Vault generated tool labels are cleaner in this build.

@@ -2,63 +2,124 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>UT Save Switchboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#050812">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Feature Vault">
+    <title>Feature Vault Mobile</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./mobile-icon.svg">
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
     <div class="app-shell">
-      <header class="topbar">
+      <header class="hero-bar">
         <div class="brand">
-          <div class="soul" aria-hidden="true"></div>
-          <div>
-            <h1>UT Save Switchboard</h1>
-            <p id="savePath">Detecting save folder...</p>
+          <div class="brand-mark" aria-hidden="true">UT</div>
+          <div class="brand-copy">
+            <p class="eyebrow">Mobile Save Editor</p>
+            <h1>Feature Vault</h1>
+            <p id="savePath">Offline mobile file mode</p>
           </div>
         </div>
-        <div class="actions">
-          <button id="reloadBtn" type="button" title="Reload live files">
-            <span class="icon" aria-hidden="true">↻</span>
-            <span>Reload</span>
-          </button>
-          <button id="importBtn" type="button" title="Import save files">
-            <span class="icon" aria-hidden="true">⇪</span>
-            <span>Import</span>
-          </button>
-          <button id="downloadBtn" type="button" title="Download edited files">
-            <span class="icon" aria-hidden="true">⇩</span>
-            <span>Download</span>
-          </button>
-          <button id="writeBtn" class="primary" type="button" title="Write to Undertale save folder">
-            <span class="icon" aria-hidden="true">◆</span>
-            <span>Write Save</span>
-          </button>
+        <div class="hero-actions" aria-label="File actions">
+          <button id="reloadBtn" type="button">Reload</button>
+          <button id="installAppBtn" type="button">Install</button>
         </div>
       </header>
 
-      <main class="grid">
-        <section class="panel run-panel">
+      <nav class="section-tabs" aria-label="Editor sections">
+        <a href="#numbers">Numbers</a>
+        <a href="#routes">Routes</a>
+        <a href="#live">Live</a>
+        <a href="#flags">Flags</a>
+      </nav>
+
+      <main class="main-grid">
+        <section id="numbers" class="panel panel-cyan">
           <div class="panel-head">
-            <h2>Run</h2>
+            <div>
+              <p class="eyebrow">Player Numbers</p>
+              <h2>Stats</h2>
+            </div>
+            <output id="fileStatus">No save loaded</output>
+          </div>
+
+          <div class="number-grid">
+            <label class="field hot-blue">
+              <span>Level</span>
+              <input id="lvInput" type="number" inputmode="numeric" min="1" max="999999999" step="1">
+            </label>
+            <label class="field hot-pink">
+              <span>HP</span>
+              <input id="hpInput" type="number" inputmode="numeric" min="1" max="999999999" step="1">
+            </label>
+            <label class="field hot-gold">
+              <span>EXP</span>
+              <input id="xpInput" type="number" inputmode="numeric" min="0" max="999999999" step="1">
+            </label>
+            <label class="field hot-green">
+              <span>Gold</span>
+              <input id="goldInput" type="number" inputmode="numeric" min="0" max="999999999" step="1">
+            </label>
+            <label class="field hot-purple">
+              <span>DMG</span>
+              <input id="damageInput" type="number" inputmode="numeric" min="-1" max="999999999" step="1">
+            </label>
+            <label class="field hot-red">
+              <span>Kills</span>
+              <input id="killsInput" type="number" inputmode="numeric" min="0" max="999999999" step="1">
+            </label>
+          </div>
+
+          <div class="fun-strip">
+            <label class="field hot-white">
+              <span>FUN</span>
+              <input id="funInput" type="number" inputmode="numeric" min="1" max="100" step="1">
+            </label>
+            <input id="funRange" class="slider" type="range" min="1" max="100" step="1" aria-label="FUN value">
+            <button id="randomFunBtn" type="button">Random FUN</button>
+          </div>
+
+          <div class="switch-grid">
+            <label class="switch">
+              <input id="syncStats" type="checkbox" checked>
+              <span class="switch-ui" aria-hidden="true"></span>
+              <span>Sync LV Stats</span>
+            </label>
+            <label class="switch">
+              <input id="capBreakToggle" type="checkbox" checked>
+              <span class="switch-ui" aria-hidden="true"></span>
+              <span>No Caps</span>
+            </label>
+          </div>
+        </section>
+
+        <section id="routes" class="panel panel-green">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Run Control</p>
+              <h2>Route</h2>
+            </div>
             <output id="routeReadout">No file0</output>
           </div>
 
-          <label class="field">
+          <label class="field hot-white">
             <span>Name</span>
             <input id="nameInput" type="text" maxlength="12" autocomplete="off" spellcheck="false">
           </label>
 
-          <div class="segment" role="group" aria-label="Route preset">
+          <div class="route-buttons" role="group" aria-label="Route preset">
             <button type="button" data-route="pacifist">Pacifist</button>
             <button type="button" data-route="neutral">Neutral</button>
             <button type="button" data-route="genocide">Genocide</button>
             <button type="button" data-route="custom">Custom</button>
           </div>
 
-          <div class="meter-row">
-            <label class="field compact">
+          <div class="murder-control">
+            <label class="field hot-red">
               <span>Route Flag</span>
-              <input id="murderInput" type="number" min="0" max="16" step="1">
+              <input id="murderInput" type="number" inputmode="numeric" min="0" max="16" step="1">
             </label>
             <input id="murderRange" class="slider" type="range" min="0" max="16" step="1" aria-label="Route flag">
           </div>
@@ -67,105 +128,94 @@
             <div id="routeTrackFill"></div>
           </div>
 
-          <div class="facts">
-            <span>LV line 2</span>
-            <span>EXP line 10</span>
-            <span>Kills line 12</span>
-            <span>Flag 26 line 57</span>
+          <div class="quick-grid">
+            <button type="button" data-quick="fresh-start">Fresh Start</button>
+            <button type="button" data-quick="omega-ready">Omega Ready</button>
+            <button type="button" data-quick="max-all">Max All</button>
+            <button type="button" data-quick="random-run">Random Run</button>
           </div>
         </section>
 
-        <section class="panel values-panel">
+        <section id="live" class="panel panel-gold">
           <div class="panel-head">
-            <h2>Values</h2>
-            <output id="fileStatus">Waiting</output>
+            <div>
+              <p class="eyebrow">Live Config</p>
+              <h2>Hook File</h2>
+            </div>
+            <output id="liveStatus">codex_live.ini</output>
           </div>
 
-          <div class="value-grid">
-            <label class="field">
-              <span>FUN</span>
-              <input id="funInput" type="number" min="1" max="100" step="1">
+          <div class="switch-grid">
+            <label class="switch">
+              <input id="wasdToggle" type="checkbox">
+              <span class="switch-ui" aria-hidden="true"></span>
+              <span>WASD Move</span>
             </label>
-            <label class="field">
-              <span>LV</span>
-              <input id="lvInput" type="number" min="1" max="999999999" step="1">
-            </label>
-            <label class="field">
-              <span>HP</span>
-              <input id="hpInput" type="number" min="1" max="999999999" step="1">
-            </label>
-            <label class="field">
-              <span>EXP</span>
-              <input id="xpInput" type="number" min="0" max="999999999" step="1">
-            </label>
-            <label class="field">
-              <span>Gold</span>
-              <input id="goldInput" type="number" min="0" max="999999999" step="1">
-            </label>
-            <label class="field">
-              <span>Kills</span>
-              <input id="killsInput" type="number" min="0" max="9999" step="1">
-            </label>
-          </div>
-
-          <div class="meter-row fun-row">
-            <input id="funRange" class="slider" type="range" min="1" max="100" step="1" aria-label="FUN value">
-            <button id="randomFunBtn" type="button" title="Random FUN">
-              <span class="icon" aria-hidden="true">?</span>
-              <span>Random</span>
-            </button>
-          </div>
-
-          <div class="toggles">
-            <label>
-              <input id="syncStats" type="checkbox" checked>
-              <span>Sync HP and EXP with LV</span>
-            </label>
-            <label>
+            <label class="switch">
               <input id="mirrorFile9" type="checkbox" checked>
-              <span>Mirror file9 backup</span>
+              <span class="switch-ui" aria-hidden="true"></span>
+              <span>Mirror file9</span>
             </label>
+          </div>
+
+          <div class="room-row">
+            <label class="field hot-blue">
+              <span>Room</span>
+              <input id="roomInput" type="number" inputmode="numeric" step="1">
+            </label>
+            <label class="field hot-green">
+              <span>Teleport</span>
+              <select id="roomPreset">
+                <option value="">Pick room</option>
+                <option value="4">Start</option>
+                <option value="19">Ruins</option>
+                <option value="44">Snowdin</option>
+                <option value="82">Waterfall</option>
+                <option value="155">Hotland</option>
+                <option value="207">CORE</option>
+                <option value="231">Judgment Hall</option>
+                <option value="237">Finale</option>
+              </select>
+            </label>
+            <button id="applyRoomBtn" type="button">Set Room</button>
+          </div>
+
+          <div class="notice">
+            Mobile can edit and export saves. Live Hook patching still needs the Windows app because phones cannot patch Undertale's PC game files.
           </div>
         </section>
 
-        <section class="panel flags-panel">
+        <section id="flags" class="panel panel-red">
           <div class="panel-head">
-            <h2>Flags</h2>
+            <div>
+              <p class="eyebrow">Save Flags</p>
+              <h2>Advanced</h2>
+            </div>
             <output id="lineCount">0 lines</output>
           </div>
 
-          <div class="value-grid slim">
-            <label class="field">
+          <div class="flag-grid">
+            <label class="field hot-gold">
               <span>Plot</span>
-              <input id="plotInput" type="number" step="1">
+              <input id="plotInput" type="number" inputmode="numeric" step="1">
             </label>
-            <label class="field">
-              <span>Room</span>
-              <input id="roomInput" type="number" step="1">
-            </label>
-            <label class="field">
+            <label class="field hot-purple">
               <span>Time</span>
-              <input id="timeInput" type="number" step="1">
+              <input id="timeInput" type="number" inputmode="numeric" step="1">
             </label>
           </div>
 
           <div class="line-editor">
-            <label class="field compact">
+            <label class="field hot-blue">
               <span>Line</span>
-              <input id="lineInput" type="number" min="1" max="999" step="1" value="57">
+              <input id="lineInput" type="number" inputmode="numeric" min="1" max="999" step="1" value="57">
             </label>
-            <label class="field line-value">
+            <label class="field hot-white">
               <span>Value</span>
               <input id="lineValueInput" type="text" spellcheck="false">
             </label>
-            <button id="readLineBtn" type="button" title="Read line">
-              <span class="icon" aria-hidden="true">⌕</span>
-              <span>Read</span>
-            </button>
-            <button id="setLineBtn" type="button" title="Set line">
-              <span class="icon" aria-hidden="true">✓</span>
-              <span>Set</span>
-            </button>
+            <button id="readLineBtn" type="button">Read</button>
+            <button id="setLineBtn" type="button">Set</button>
           </div>
 
           <div id="statusLog" class="status-log" role="status" aria-live="polite"></div>
@@ -173,7 +223,13 @@
       </main>
     </div>
 
-    <input id="filePicker" type="file" accept=".ini,.txt" multiple hidden>
+    <div class="bottom-dock" aria-label="Mobile file actions">
+      <button id="importBtn" type="button">Import</button>
+      <button id="downloadBtn" type="button">Save Files</button>
+      <button id="writeBtn" class="primary" type="button">Write Live</button>
+    </div>
+
+    <input id="filePicker" type="file" multiple hidden>
     <script src="./app.js"></script>
   </body>
 </html>

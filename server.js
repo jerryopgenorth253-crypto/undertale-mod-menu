@@ -14,6 +14,7 @@ const MIME = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
   ".svg": "image/svg+xml",
 };
@@ -74,15 +75,16 @@ async function readIfExists(fileName) {
 }
 
 async function apiState(res) {
-  const [ini, file0, file9] = await Promise.all([
+  const [ini, file0, file9, live] = await Promise.all([
     readIfExists("undertale.ini"),
     readIfExists("file0"),
     readIfExists("file9"),
+    readIfExists("codex_live.ini"),
   ]);
 
   sendJson(res, 200, {
     saveDir: SAVE_DIR,
-    files: { ini, file0, file9 },
+    files: { ini, file0, file9, live },
   });
 }
 
@@ -136,6 +138,10 @@ async function apiWrite(req, res) {
     if (payload.mirrorFile9 !== false) {
       writes.push({ fileName: "file9", text: payload.file0Text });
     }
+  }
+
+  if (typeof payload.liveText === "string" && payload.writeLiveConfig !== false) {
+    writes.push({ fileName: "codex_live.ini", text: payload.liveText });
   }
 
   if (writes.length === 0) {

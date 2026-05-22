@@ -1,6 +1,7 @@
 # Undertale Mod Menu
 
 ![Windows](https://img.shields.io/badge/platform-Windows-2f7df6)
+![Mobile Web](https://img.shields.io/badge/mobile-web%20PWA-45f584)
 ![Build](https://img.shields.io/badge/build-.NET%20Framework-7d70ff)
 ![Unofficial](https://img.shields.io/badge/status-unofficial%20fan%20tool-ff3f5c)
 
@@ -26,6 +27,7 @@ Backups are created before save writes.
 | Clean Feature Tools | Replaces generated 100K tabs with curated player-facing sections and professional feature cards. |
 | Player numbers | Edit level, HP, EXP, gold, and damage with large uncapped inputs. |
 | WASD movement | Toggle WASD movement for overworld and battle after installing Live Hook V3. |
+| Mobile web edition | Touch-first browser/PWA version for phones and tablets. Import `file0`, `undertale.ini`, and `codex_live.ini`, edit them, then download the changed files. |
 | Route tools | Adjust FUN, route state, kills, murder-route flag, plot, room, and time. |
 | Inventory Forge | Add regular Undertale items and experimental raw mod-token IDs. |
 | Feature Tools | Pick named actions for player presets, route setup, room teleports, inventory loadouts, FUN events, story flags, and world settings. |
@@ -70,6 +72,28 @@ The hub does not bypass GameJolt download pages, login prompts, creator permissi
 ## WASD Movement
 
 Turn on **WASD Move**, click **Install Live Hook**, choose your Undertale `data.win`, then restart Undertale from the patched folder. The V3 hook maps W/A/S/D to the normal arrow controls, so it works in normal rooms and battles.
+
+## Mobile Web Edition
+
+The mobile edition is the browser app in:
+
+```text
+index.html
+app.js
+styles.css
+manifest.webmanifest
+sw.js
+mobile-icon.svg
+```
+
+It works on phones as an import/edit/export tool:
+
+1. Open the hosted page or copy the mobile files to a phone and open `index.html`.
+2. Tap **Import** and choose `file0`, `undertale.ini`, and optionally `codex_live.ini`.
+3. Change LV, HP, EXP, gold, damage, FUN, route, room, flags, WASD, and caps.
+4. Tap **Save Files** to download edited `file0`, `file9`, `undertale.ini`, and `codex_live.ini`.
+
+Phone browsers cannot run the Windows EXE, patch `data.win`, or inject into a running PC game. Live Hook installation still requires the Windows app, but the mobile build can prepare the same save/config files.
 
 ## Auto-Update
 

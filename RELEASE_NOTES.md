@@ -1,5 +1,16 @@
 # Release Notes
 
+## Mobile Web Build
+
+### New
+
+- Rebuilt the browser editor as a mobile-first Feature Vault PWA
+- Added touch-size controls for LV, HP, EXP, gold, DMG, kills, FUN, route, room, plot, time, raw line edits, WASD, file9 mirror, and cap removal
+- Mobile import/export now handles `file0`, `file9`, `undertale.ini`, and `codex_live.ini`
+- Added `manifest.webmanifest`, `sw.js`, and `mobile-icon.svg` so the web version can be installed to a phone home screen when hosted
+- Server API now reads and writes `codex_live.ini` for the browser editor
+- Mobile build is honest about the platform limit: save/config editing works on phones, Live Hook patching still needs the Windows app
+
 ## WASD Movement Build
 
 ### New

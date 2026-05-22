@@ -1,0 +1,19 @@
+{
+  "name": "Feature Vault Mobile",
+  "short_name": "Feature Vault",
+  "description": "Mobile Undertale save editor companion for importing, editing, and exporting save files.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050812",
+  "theme_color": "#050812",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./mobile-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

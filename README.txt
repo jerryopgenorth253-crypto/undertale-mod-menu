@@ -13,12 +13,18 @@ Latest visual pass: professional Feature Tools cards, curated category tabs, no 
 Watch Game toggle: waits for an Undertale process/window, writes the edited save once with a backup, then refreshes the save file while the game is running. This is not process injection; if Undertale already cached old values, reload/restart the save screen.
 Live Hook V3: this is the safe replacement for raw process injection. Click Install Live Hook, choose the game's data.win, and the app patches a tiny UndertaleModTool hook into the game so Undertale reads %LOCALAPPDATA%\UNDERTALE\codex_live.ini while it is running. Write Save updates that live config, Watch Game keeps refreshing it, and WASD Move maps W/A/S/D to arrow movement. The hook forces DMG during live polling, battle startup, battle stat reset, and attack calculation. A data.win.codex-backup-yyyyMMdd-HHmmss backup is created beside the chosen data.win before patching.
 
+Mobile edition: open index.html on a phone or host the repo as a web page. The mobile build is touch-first and can import file0, undertale.ini, and codex_live.ini, edit LV/HP/EXP/gold/DMG/FUN/routes/rooms/flags/WASD, and download the changed files. Phones cannot run the Windows EXE or patch a PC data.win, so Live Hook install remains Windows-only.
+
 Run the native EXE:
 1. Double-click UndertaleSaveStudioPro.exe
 
 Run the browser version:
 1. Double-click start-editor.bat
 2. Open http://127.0.0.1:17380
+
+Run the mobile web version:
+1. Open index.html from a phone browser, or host the folder on GitHub Pages.
+2. Tap Import, choose your save/config files, edit, then tap Save Files.
 
 The app reads and writes:
 %LOCALAPPDATA%\UNDERTALE\undertale.ini
